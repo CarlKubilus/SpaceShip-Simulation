@@ -1,0 +1,198 @@
+<html>
+
+<head>
+
+<title></title>
+
+</head>
+
+<body>
+<script language="javascript" type="text/javascript">
+document.write("Welcome!");
+
+/* Important Data */
+var players = [];
+var hostiles = [];
+
+/* Weapons Definition Arrays */
+/* Weapons have a name, combat modifier, ap cost, damage, damage type, refreshrate(0 for no exhaust, 1 for single exhaust, 2+ for more) and number of hands used. */
+/* Each weapon uses 7 slots in the array */
+var commonWeaponsArray = ["Six Shooter", -1, 1, 1, "physical", 0, 1, "Hand Cannon", 2, 2, 2, "physical", 0, 1, "Mark 1", -1, 2, 1, "energy", 0, 1];
+var exoticWeaponsArray = ["Balmoen Quantum Disruptor", 3, 4, 5, "energy", 1, 2];
+
+/* Create player */
+var player = function (name, apMax, hpMax, refresh, weapon, agility, endurance, expertise, cunning, intelligence) {
+    var playerName = name;
+    var playerHitNumber = 0;
+    var playerAPMax = apMax;
+    var playerAPCurrent = apMax;
+    var playerHPMax = hpMax;
+    var playerHPCurrent = hpMax;
+    var playerRefresh = refresh;
+    document.write("Checkpoint 7!");
+    var playerWeaponName = weaponLookup(weapon)[0];
+    var playerWeaponModifier = weaponLookup(weapon)[1];
+    var playerWeaponAP = weaponLookup(weapon)[2];
+    var playerWeaponDMG = weaponLookup(weapon)[3];
+    var playerWeaponDMGType = weaponLookup(weapon)[4];
+    var playerWeaponRefresh = weaponLookup(weapon)[5];
+    var playerWeaponHands = weaponLookup(weapon)[6];
+    var playerAgility = agility;
+    var playerEndurance = endurance;
+    var playerExpertise = expertise;
+    var playerCunning = cunning;
+    var playerIntelligence = intelligence;
+    return playerName;
+};
+
+/* Create hostile */
+var hostile = function (name, apMax, hpMax, refresh, weapon, agility, endurance, expertise, cunning, intelligence) {
+    var hostileName = name;
+    var hostileHitNumber = 0;
+    var hostileAPMax = apMax;
+    var hostileAPCurrent = apMax;
+    var hostileHPMax = hpMax;
+    var hostileHPCurrent = hpMax;
+    var hostileRefresh = refresh;
+    document.write("Checkpoint 7!");
+    var hostileWeaponName = weaponLookup(weapon)[0];
+    var hostileWeaponModifier = weaponLookup(weapon)[1];
+    var hostileWeaponAP = weaponLookup(weapon)[2];
+    var hostileWeaponDMG = weaponLookup(weapon)[3];
+    var hostileWeaponDMGType = weaponLookup(weapon)[4];
+    var hostileWeaponRefresh = weaponLookup(weapon)[5];
+    var hostileWeaponHands = weaponLookup(weapon)[6];
+    var hostileAgility = agility;
+    var hostileEndurance = endurance;
+    var hostileExpertise = expertise;
+    var hostileCunning = cunning;
+    var hostileIntelligence = intelligence;
+    return hostileName;
+};
+
+/* Weapon Lookup*/
+var weaponLookup = function (name){
+    document.write("Checkpoint 8!");
+    var index = 0;
+    var returnArray = [0,0,0,0,0,0,0];
+    var commonWeaponsArrayLength = commonWeaponsArray.length;
+    document.write("Length is: " + commonWeaponsArrayLength);
+    var exoticWeaponsArrayLength = exoticWeaponsArray.length;
+    for (index = 0; index <= commonWeaponsArrayLength; index = index + 6){
+        document.write("Index is: " + index);
+        if (commonWeaponsArray[index] === name){
+            returnArray[0] = commonWeaponsArray[index];
+            returnArray[1] = commonWeaponsArray[index+1];
+            returnArray[2] = commonWeaponsArray[index+2];
+            returnArray[3] = commonWeaponsArray[index+3];
+            returnArray[4] = commonWeaponsArray[index+4];
+            returnArray[5] = commonWeaponsArray[index+5];
+            returnArray[6] = commonWeaponsArray[index+6];
+            document.write("Checkpoint 9!");
+            return  returnArray;
+            /* return [commonWeaponsArray[index], commonWeaponsArray[index+1], commonWeaponsArray[index+2], commonWeaponsArray[index+3], commonWeaponsArray[index+4], commonWeaponsArray[index+5], commonWeaponsArray[index+6]]; */
+        }
+        else {
+            document.write("No weapon found!");
+        }
+    }
+    
+    for (index = 0; index <= exoticWeaponsArrayLength; index = index + 6){
+        if (exoticWeaponsArray[index] === name){
+            returnArray[0] = exoticWeaponsArray[index];
+            returnArray[1] = exoticWeaponsArray[index+1];
+            returnArray[2] = exoticWeaponsArray[index+2];
+            returnArray[3] = exoticWeaponsArray[index+3];
+            returnArray[4] = exoticWeaponsArray[index+4];
+            returnArray[5] = exoticWeaponsArray[index+5];
+            returnArray[6] = exoticWeaponsArray[index+6];
+            return  returnArray;
+            /* return [exoticWeaponsArray[index], exoticWeaponsArray[index+1], exoticWeaponsArray[index+2], exoticWeaponsArray[index+3], exoticWeaponsArray[index+4], exoticWeaponsArray[index+5], exoticWeaponsArray[index+6]]; */
+            }
+        else {
+            document.write("No weapon found!");
+        }
+    }
+};
+
+/* Display player/hostile information */
+var displayInfo = function (name){
+    document.write("Checkpoint 1");
+    var count = 0;
+    for (count = 0; count <= players.length(); count++){
+        if (name === players[count]){
+            document.write("Checkpoint 2");
+            document.write("Player Name: " + players[count].playerName);
+            document.write("AP Max: " + players[count].playerAPMax);
+            document.write("AP Current: " + players[count].playerAPCurrent);
+            document.write("HP Max: " + players[count].playerHPMax);
+            document.write("HP Current: " + players[count].playerHPCurrent);
+            document.write("Refresh: " + players[count].playerRefresh);
+            document.write("Weapon Name: " + players[count].playerWeaponName);
+            document.write("Weapon AP Cost: " + players[count].playerWeaponAP);
+            document.write("Weapon Damage: " + players[count].playerWeaponDMG);
+            document.write("Weapon Damage Type: " + players[count].playerWeaponDMGType);
+            document.write("Weapon Refresh: " + players[count].playerWeaponRefresh);
+            document.write("Weapon Hands Usage: " + players[count].playerWeaponHands);
+            document.write("Agility: " + players[count].playerAgility);
+            document.write("Endurance: " + players[count].playerEndurance);
+            document.write("Expertise: " + players[count].playerExpertise);
+            document.write("Cunning: " + players[count].playerCunning);
+            document.write("Intelligence: " + players[count].playerIntelligence);
+        }
+        else {
+            document.write("No players found!");
+        }
+    }
+    for (count = 0; count <= players.length(); count++){
+        if (name === hostiles[count]){
+            document.write("Checkpoint 3");
+            document.write("Player Name: " + hostiles[count].hostileName);
+            document.write("AP Max: " + hostiles[count].hostileAPMax);
+            document.write("AP Current: " + hostiles[count].hostileAPCurrent);
+            document.write("HP Max: " + hostiles[count].hostileHPMax);
+            document.write("HP Current: " + hostiles[count].hostileHPCurrent);
+            document.write("Refresh: " + hostiles[count].hostileRefresh);
+            document.write("Weapon Name: " + hostiles[count].hostileWeaponName);
+            document.write("Weapon AP Cost: " + hostiles[count].hostileWeaponAP);
+            document.write("Weapon Damage: " + hostiles[count].hostileWeaponDMG);
+            document.write("Weapon Damage Type: " + hostiles[count].hostileWeaponDMGType);
+            document.write("Weapon Refresh: " + hostiles[count].hostileWeaponRefresh);
+            document.write("Weapon Hands Usage: " + hostiles[count].hostileWeaponHands);
+            document.write("Agility: " + hostiles[count].hostileAgility);
+            document.write("Endurance: " + hostiles[count].hostileEndurance);
+            document.write("Expertise: " + hostiles[count].hostileExpertise);
+            document.write("Cunning: " + hostiles[count].hostileCunning);
+            document.write("Intelligence: " + hostiles[count].hostileIntelligence);
+        }
+        else {
+            document.write("No hostiles found!");
+        }
+    }
+};
+
+/* Planetary Combat Function
+var planetaryCombat = function (player, hostile){
+
+}
+*/
+
+/* ********************************************************************************************************** */
+/* Run simulation */
+document.write("Checkpoint 6");
+var player1 = player("Carl", 5, 10, 3, "Six Shooter", 3, 2, 2, 2, 1);
+var player2 = player("Steve", 6, 8, 4, "Hand Cannon", 1, 3, 5, 1, 2);
+var hostile1 = hostile("Hank", 4, 5, 2, "Balmoen Quantum Disruptor", 3, 2, 2, 2, 1);
+document.write("Checkpoint 4");
+players[0] = player1;
+players[1] = player2;
+hostiles[0] = hostile1;
+document.write("Checkpoint 5");
+displayInfo("Carl");
+displayInfo("Steve");
+displayInfo("Hank");
+
+</script>
+</body>
+
+</html>
