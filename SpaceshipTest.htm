@@ -8,7 +8,17 @@
 
 <body>
 <script language="javascript" type="text/javascript">
-document.write("Welcome!");
+
+/* NEED TO DO:
+1: Add player current weapon(s)/active cards;
+2: Make it so a player can have multiple cards "active" at one time.
+3: Make it so multiple players can fight multiple hostiles (a super event outside calling multiple "planetary combat" calls)
+4: Randomize which player hostile attacks.
+5: Add exotic/skills/allies decks
+*/
+
+/* Test Variable */
+var hitCount = 0;
 
 /* Important Data */
 var players = [];
@@ -17,70 +27,263 @@ var hostiles = [];
 /* Weapons Definition Arrays */
 /* Weapons have a name, combat modifier, ap cost, damage, damage type, refreshrate(0 for no exhaust, 1 for single exhaust, 2+ for more) and number of hands used. */
 /* Each weapon uses 7 slots in the array */
-var commonWeaponsArray = ["Six Shooter", -1, 1, 1, "physical", 0, 1, "Hand Cannon", 2, 2, 2, "physical", 0, 1, "Mark 1", -1, 2, 1, "energy", 0, 1];
-var exoticWeaponsArray = ["Balmoen Quantum Disruptor", 3, 4, 5, "energy", 1, 2];
+//var commonWeaponsArray = ["Six Shooter", -1, 1, 1, "physical", 0, 1, "Hand Cannon", 2, 2, 2, "physical", 0, 1, "Mark 1", -1, 2, 1, "energy", 0, 1];
+//var exoticWeaponsArray = ["Balmoen Quantum Disruptor", 3, 4, 5, "energy", 1, 2];
+var commonGearDeck = [];
+
+/* Common Gear Creation */
+var commonGearGenerator = function (){
+    var returnArray = [];
+    var curCard = new Object();
+    // ARMOR
+    curCard.name = "Titanium Weave Vest";
+    curCard.type = "commonGear";
+    curCard.type2 = "armor";
+    curCard.switchable = false;
+    curCard.effectCount = 1;
+    curCard.effect1 = -1;
+    curCard.effect1type = "physical";
+    curCard.effect2 = "None";
+    curCard.effect2type = "None";
+    curCard.effect3 = "None";
+    curCard.effect3type = "None";
+    curCard.effect4 = "None";
+    curCard.effect4type = "None";
+    returnArray[0] = curCard;
+    curCard.name = "Power Suit";
+    curCard.type = "commonGear";
+    curCard.type2 = "armor";
+    curCard.effectCount = 2;
+    curCard.effect1 = -2;
+    curCard.effect1type = "physical";
+    curCard.effect2 = 1;
+    curCard.effect2type = "energy";
+    returnArray[1] = curCard;
+    curCard.name = "Carbon Nano-mesh Skin";
+    curCard.type = "commonGear";
+    curCard.type2 = "armor";
+    curCard.effectCount = 1;
+    curCard.effect1 = -3;
+    curCard.effect1type = "physical";
+    curCard.effect2 = "None";
+    curCard.effect2type = "None";
+    returnArray[2] = curCard;
+    curCard.name = "Tesla Suit";
+    curCard.type = "commonGear";
+    curCard.type2 = "armor";
+    curCard.effectCount = 2;
+    curCard.effect1 = -3;
+    curCard.effect1type = "energy";
+    curCard.effect2 = 1;
+    curCard.effect2type = "physical";
+    returnArray[3] = curCard;
+    curCard.name = "Ol' Brown Duster";
+    curCard.type = "commonGear";
+    curCard.type2 = "armor";
+    curCard.effectCount = 2;
+    curCard.effect1 = 1;
+    curCard.effect1type = "charisma";
+    curCard.effect2 = 1;
+    curCard.effect2type = "cunning";
+    returnArray[4] = curCard;
+    curCard.name = "Accelerator Suit";
+    curCard.type = "commonGear";
+    curCard.type2 = "armor";
+    curCard.effectCount = 4;
+    curCard.effect1 = 1;
+    curCard.effect1type = "physical";
+    curCard.effect2 = 1;
+    curCard.effect2type = "energy";
+    curCard.effect3 = 1;
+    curCard.effect3type = "agility";
+    curCard.effect4 = 1;
+    curCard.effect4type = "expertise";
+    returnArray[5] = curCard;
+    curCard.effect3 = "None";
+    curCard.effect3type = "None";
+    curCard.effect4 = "None";
+    curCard.effect4type = "None";
+    curCard.name = "Exo-Skeleton MkIII";
+    curCard.type = "commonGear";
+    curCard.type2 = "armor";
+    curCard.switchable = true;
+    curCard.effectCount = 2;
+    curCard.effect1 = 2;
+    curCard.effect1type = "endurance";
+    curCard.effect2 = 2;
+    curCard.effect2type = "agility";
+    returnArray[6] = curCard;
+    curCard.switchable = false;
+    curCard.effectCount = 0;
+    curCard.effect1 = "None";
+    curCard.effect1type = "None";
+    curCard.effect2 = "None";
+    curCard.effect2type = "None";
+    curCard.effect3 = "None";
+    curCard.effect3type = "None";
+    curCard.effect4 = "None";
+    curCard.effect4type = "None";
+    
+    // WEAPONS
+    // name, combat modifier, ap cost, damage, damage type, refreshrate(0 for no exhaust, 1 for single exhaust, 2+ for more) and number of hands used.
+    curCard.name = "Six Shooter";
+    curCard.type = "commonGear";
+    curCard.type2 = "weapon";
+    curCard.combatMod = -1;
+    curCard.APCost = 1;
+    curCard.dmg = 1;
+    curCard.dmgType = "physical";
+    curCard.refreshRate = 0;
+    curCard.hands = 1;
+    returnArray[7] = curCard;
+    curCard.name = "Hand Cannon";
+    curCard.type = "commonGear";
+    curCard.type2 = "weapon";
+    curCard.combatMod = 2;
+    curCard.APCost = 2;
+    curCard.dmg = 2;
+    curCard.dmgType = "physical";
+    curCard.refreshRate = 0;
+    curCard.hands = 1;
+    returnArray[8] = curCard;
+    curCard.name = "Mark 1";
+    curCard.type = "commonGear";
+    curCard.type2 = "weapon";
+    curCard.combatMod = -1;
+    curCard.APCost = 2;
+    curCard.dmg = 1;
+    curCard.dmgType = "energy";
+    curCard.refreshRate = 0;
+    curCard.hands = 1;
+    returnArray[9] = curCard;
+    curCard.name = "Plasma Rifle";
+    curCard.type = "commonGear";
+    curCard.type2 = "weapon";
+    curCard.combatMod = 2;
+    curCard.APCost = 3;
+    curCard.dmg = 4;
+    curCard.dmgType = "energy";
+    curCard.refreshRate = 0;
+    curCard.hands = 2;
+    curCard.effectCount = 1;
+    curCard.effect1 = 1;
+    curCard.effect1type = "bonus die";
+    returnArray[10] = curCard;
+    curCard.effectCount = 0;
+    curCard.effect1 = "None";
+    curCard.effect1type = "None";
+    
+    //name, combat modifier, ap cost, damage, damage type, refreshrate(0 for no exhaust, 1 for single exhaust, 2+ for more) and number of hands used.
+    return returnArray;
+};
 
 /* Create player */
-var player = function (name, apMax, hpMax, refresh, weapon, agility, endurance, expertise, cunning, intelligence) {
-    var playerName = name;
-    var playerHitNumber = 0;
-    var playerAPMax = apMax;
-    var playerAPCurrent = apMax;
-    var playerHPMax = hpMax;
-    var playerHPCurrent = hpMax;
-    var playerRefresh = refresh;
-    document.write("Checkpoint 7!");
-    var playerWeaponName = weaponLookup(weapon)[0];
-    var playerWeaponModifier = weaponLookup(weapon)[1];
-    var playerWeaponAP = weaponLookup(weapon)[2];
-    var playerWeaponDMG = weaponLookup(weapon)[3];
-    var playerWeaponDMGType = weaponLookup(weapon)[4];
-    var playerWeaponRefresh = weaponLookup(weapon)[5];
-    var playerWeaponHands = weaponLookup(weapon)[6];
-    var playerAgility = agility;
-    var playerEndurance = endurance;
-    var playerExpertise = expertise;
-    var playerCunning = cunning;
-    var playerIntelligence = intelligence;
-    return playerName;
+var player = function(name, apMax, hpMax, refresh, agility, endurance, expertise, cunning, intelligence) {
+    var  p = new Object();
+    p.type = "player";
+    p.playerName = name;
+    p.playerHitNumber = 0;
+    p.playerAPMax = apMax;
+    p.playerAPCurrent = apMax;
+    p.playerHPMax = hpMax;
+    p.playerHPCurrent = hpMax;
+    p.playerRefresh = refresh;
+    //document.writeln("Checkpoint 7!");
+    //p.playerWeaponArray = weaponLookup(weapon);
+    //document.write("Checkpoint 7.5!");
+    //document.writeln("Weapon Name: " + p.playerWeaponArray[0]);
+    //document.writeln("Weapon Name: " + p.playerWeaponArray[0]);
+    //p.playerWeaponName = p.playerWeaponArray[0];
+    //p.playerWeaponModifier = p.playerWeaponArray[1];
+    //p.playerWeaponAP = p.playerWeaponArray[2];
+    //p.playerWeaponDMG = p.playerWeaponArray[3];
+    //p.playerWeaponDMGType = p.playerWeaponArray[4];
+    //p.playerWeaponRefresh = p.playerWeaponArray[5];
+    //p.playerWeaponHands = p.playerWeaponArray[6];
+    //document.write("Checkpoint 8!");
+    p.playerAgility = agility;
+    p.playerEndurance = endurance;
+    p.playerExpertise = expertise;
+    p.playerCunning = cunning;
+    p.playerIntelligence = intelligence;
+    p.playerDefenseModifier = 0;
+    p.playerItems = [];
+    return p;
 };
 
 /* Create hostile */
-var hostile = function (name, apMax, hpMax, refresh, weapon, agility, endurance, expertise, cunning, intelligence) {
-    var hostileName = name;
-    var hostileHitNumber = 0;
-    var hostileAPMax = apMax;
-    var hostileAPCurrent = apMax;
-    var hostileHPMax = hpMax;
-    var hostileHPCurrent = hpMax;
-    var hostileRefresh = refresh;
-    document.write("Checkpoint 7!");
-    var hostileWeaponName = weaponLookup(weapon)[0];
-    var hostileWeaponModifier = weaponLookup(weapon)[1];
-    var hostileWeaponAP = weaponLookup(weapon)[2];
-    var hostileWeaponDMG = weaponLookup(weapon)[3];
-    var hostileWeaponDMGType = weaponLookup(weapon)[4];
-    var hostileWeaponRefresh = weaponLookup(weapon)[5];
-    var hostileWeaponHands = weaponLookup(weapon)[6];
-    var hostileAgility = agility;
-    var hostileEndurance = endurance;
-    var hostileExpertise = expertise;
-    var hostileCunning = cunning;
-    var hostileIntelligence = intelligence;
-    return hostileName;
+var hostile = function(name, apMax, hpMax, refresh, agility, endurance, expertise, cunning, intelligence) {
+    var h = new Object();
+    h.type = "hostile";
+    h.hostileName = name;
+    h.hostileHitNumber = 0;
+    h.hostileAPMax = apMax;
+    h.hostileAPCurrent = apMax;
+    h.hostileHPMax = hpMax;
+    h.hostileHPCurrent = hpMax;
+    h.hostileRefresh = refresh;
+    //document.write("Checkpoint 7!");
+    //h.hostileWeaponArray = weaponLookup(weapon);
+    //document.write("Checkpoint 7.6!");
+    //document.writeln(h.hostileWeaponArray);
+    //h.hostileWeaponName = h.hostileWeaponArray[0];
+    //h.hostileWeaponModifier = h.hostileWeaponArray[1];
+    //h.hostileWeaponAP = h.hostileWeaponArray[2];
+    //h.hostileWeaponDMG = h.hostileWeaponArray[3];
+    //h.hostileWeaponDMGType = h.hostileWeaponArray[4];
+    //h.hostileWeaponRefresh = h.hostileWeaponArray[5];
+    //h.hostileWeaponHands = h.hostileWeaponArray[6];
+    //document.write("Checkpoint 8!");
+    h.hostileAgility = agility;
+    h.hostileEndurance = endurance;
+    h.hostileExpertise = expertise;
+    h.hostileCunning = cunning;
+    h.hostileIntelligence = intelligence;
+    h.hostileDefenseModifier = 0;
+    h.hostileItems = [];
+    return h;
 };
 
-/* Weapon Lookup*/
-var weaponLookup = function (name){
-    document.write("Checkpoint 8!");
+/* Common Gear Lookup */
+var commonGearLookup = function (deck){
+    // document.write("Checkpoint 8!");
+    // var w = new Object();
     var index = 0;
-    var returnArray = [0,0,0,0,0,0,0];
+    var deckLength = deck.length;
+    document.write("Length is: " + deckLength + "<br>");
+    for (index = 0; index < deckLength; index = index + 7){
+        if (deck[index].name === name){
+            //document.write(returnArray);
+            //document.write("Checkpoint 9!");
+            return  deck[index];
+        }
+        else {
+            //document.write("No weapon found! " + index);
+            return null;
+        }
+    }
+}; 
+
+/* Weapon Lookup OLD 
+var weaponLookup = function (name){
+    // document.write("Checkpoint 8!");
+    // var w = new Object();
+    var index = 0;
+    var returnArray = [];
     var commonWeaponsArrayLength = commonWeaponsArray.length;
-    document.write("Length is: " + commonWeaponsArrayLength);
+    //document.write("Length is: " + commonWeaponsArrayLength);
     var exoticWeaponsArrayLength = exoticWeaponsArray.length;
-    for (index = 0; index <= commonWeaponsArrayLength; index = index + 6){
-        document.write("Index is: " + index);
+    for (index = 0; index < commonWeaponsArrayLength; index = index + 7){
+        //document.write("Index is: " + index);
         if (commonWeaponsArray[index] === name){
+            //document.write("Name is: " + name);
+            //document.write("array[0] is: " + commonWeaponsArray[index]);
+            //document.write("array[1] is: " + commonWeaponsArray[index+1]);
+            //document.write("array[2] is: " + commonWeaponsArray[index+2]);
+            //document.write("array[3] is: " + commonWeaponsArray[index+3]);
+            //document.write("array[4] is: " + commonWeaponsArray[index+4]);
+            //document.write("array[5] is: " + commonWeaponsArray[index+5]);
+            //document.write("array[6] is: " + commonWeaponsArray[index+6]);
             returnArray[0] = commonWeaponsArray[index];
             returnArray[1] = commonWeaponsArray[index+1];
             returnArray[2] = commonWeaponsArray[index+2];
@@ -88,16 +291,16 @@ var weaponLookup = function (name){
             returnArray[4] = commonWeaponsArray[index+4];
             returnArray[5] = commonWeaponsArray[index+5];
             returnArray[6] = commonWeaponsArray[index+6];
-            document.write("Checkpoint 9!");
+            //document.write(returnArray);
+            //document.write("Checkpoint 9!");
             return  returnArray;
-            /* return [commonWeaponsArray[index], commonWeaponsArray[index+1], commonWeaponsArray[index+2], commonWeaponsArray[index+3], commonWeaponsArray[index+4], commonWeaponsArray[index+5], commonWeaponsArray[index+6]]; */
         }
         else {
-            document.write("No weapon found!");
+            //document.write("No weapon found! " + index);
         }
     }
     
-    for (index = 0; index <= exoticWeaponsArrayLength; index = index + 6){
+    for (index = 0; index < exoticWeaponsArrayLength; index = index + 7){
         if (exoticWeaponsArray[index] === name){
             returnArray[0] = exoticWeaponsArray[index];
             returnArray[1] = exoticWeaponsArray[index+1];
@@ -107,91 +310,322 @@ var weaponLookup = function (name){
             returnArray[5] = exoticWeaponsArray[index+5];
             returnArray[6] = exoticWeaponsArray[index+6];
             return  returnArray;
-            /* return [exoticWeaponsArray[index], exoticWeaponsArray[index+1], exoticWeaponsArray[index+2], exoticWeaponsArray[index+3], exoticWeaponsArray[index+4], exoticWeaponsArray[index+5], exoticWeaponsArray[index+6]]; */
             }
         else {
-            document.write("No weapon found!");
+            //document.write("No weapon found! " + index);
         }
     }
-};
+}; */
 
 /* Display player/hostile information */
 var displayInfo = function (name){
-    document.write("Checkpoint 1");
+    //document.write("Checkpoint 1");
+    //document.write("Name: " + name);
     var count = 0;
-    for (count = 0; count <= players.length(); count++){
-        if (name === players[count]){
-            document.write("Checkpoint 2");
-            document.write("Player Name: " + players[count].playerName);
-            document.write("AP Max: " + players[count].playerAPMax);
-            document.write("AP Current: " + players[count].playerAPCurrent);
-            document.write("HP Max: " + players[count].playerHPMax);
-            document.write("HP Current: " + players[count].playerHPCurrent);
-            document.write("Refresh: " + players[count].playerRefresh);
-            document.write("Weapon Name: " + players[count].playerWeaponName);
-            document.write("Weapon AP Cost: " + players[count].playerWeaponAP);
-            document.write("Weapon Damage: " + players[count].playerWeaponDMG);
-            document.write("Weapon Damage Type: " + players[count].playerWeaponDMGType);
-            document.write("Weapon Refresh: " + players[count].playerWeaponRefresh);
-            document.write("Weapon Hands Usage: " + players[count].playerWeaponHands);
-            document.write("Agility: " + players[count].playerAgility);
-            document.write("Endurance: " + players[count].playerEndurance);
-            document.write("Expertise: " + players[count].playerExpertise);
-            document.write("Cunning: " + players[count].playerCunning);
-            document.write("Intelligence: " + players[count].playerIntelligence);
+    var currentPlayer = new Object();
+    var currentHostile = new Object();
+    for (count = 0; count < players.length; count++){
+        //document.write("Current Player: " + players[count[0]]);
+        if (name === players[count].playerName){
+            currentPlayer = players[count];
+            //document.write("Checkpoint 2");
+            document.write("Player Name: " + currentPlayer.playerName + "<br>");
+            document.write("AP Max: " + currentPlayer.playerAPMax + "<br>");
+            document.write("AP Current: " + currentPlayer.playerAPCurrent + "<br>");
+            document.write("HP Max: " + currentPlayer.playerHPMax + "<br>");
+            document.write("HP Current: " + currentPlayer.playerHPCurrent + "<br>");
+            document.write("Refresh: " + currentPlayer.playerRefresh + "<br>");
+            document.write("Items: " + currentPlayer.playerItems[0]  + "<br>");
+            //document.write("Weapon Name: " + currentPlayer.playerWeaponName + "<br>");
+            //document.write("Weapon Modifier: " + currentPlayer.playerWeaponModifier + "<br>");
+            //document.write("Weapon AP Cost: " + currentPlayer.playerWeaponAP + "<br>");
+            //document.write("Weapon Damage: " + currentPlayer.playerWeaponDMG + "<br>");
+            //document.write("Weapon Damage Type: " + currentPlayer.playerWeaponDMGType + "<br>");
+            //document.write("Weapon Refresh: " + currentPlayer.playerWeaponRefresh + "<br>");
+            //document.write("Weapon Hands Usage: " + currentPlayer.playerWeaponHands + "<br>");
+            document.write("Agility: " + currentPlayer.playerAgility + "<br>");
+            document.write("Endurance: " + currentPlayer.playerEndurance + "<br>");
+            document.write("Expertise: " + currentPlayer.playerExpertise + "<br>");
+            document.write("Cunning: " + currentPlayer.playerCunning + "<br>");
+            document.write("Intelligence: " + currentPlayer.playerIntelligence + "<br>" + "<br>");
+            return;
         }
         else {
-            document.write("No players found!");
+            //document.write("No players found!");
         }
     }
-    for (count = 0; count <= players.length(); count++){
-        if (name === hostiles[count]){
-            document.write("Checkpoint 3");
-            document.write("Player Name: " + hostiles[count].hostileName);
-            document.write("AP Max: " + hostiles[count].hostileAPMax);
-            document.write("AP Current: " + hostiles[count].hostileAPCurrent);
-            document.write("HP Max: " + hostiles[count].hostileHPMax);
-            document.write("HP Current: " + hostiles[count].hostileHPCurrent);
-            document.write("Refresh: " + hostiles[count].hostileRefresh);
-            document.write("Weapon Name: " + hostiles[count].hostileWeaponName);
-            document.write("Weapon AP Cost: " + hostiles[count].hostileWeaponAP);
-            document.write("Weapon Damage: " + hostiles[count].hostileWeaponDMG);
-            document.write("Weapon Damage Type: " + hostiles[count].hostileWeaponDMGType);
-            document.write("Weapon Refresh: " + hostiles[count].hostileWeaponRefresh);
-            document.write("Weapon Hands Usage: " + hostiles[count].hostileWeaponHands);
-            document.write("Agility: " + hostiles[count].hostileAgility);
-            document.write("Endurance: " + hostiles[count].hostileEndurance);
-            document.write("Expertise: " + hostiles[count].hostileExpertise);
-            document.write("Cunning: " + hostiles[count].hostileCunning);
-            document.write("Intelligence: " + hostiles[count].hostileIntelligence);
+    for (count = 0; count < players.length; count++){
+        if (name === hostiles[count].hostileName){
+            currentHostile = hostiles[count];
+            //document.write("Checkpoint 3");
+            document.write("Player Name: " + currentHostile.hostileName + "<br>");
+            document.write("AP Max: " + currentHostile.hostileAPMax + "<br>");
+            document.write("AP Current: " + currentHostile.hostileAPCurrent + "<br>");
+            document.write("HP Max: " + currentHostile.hostileHPMax + "<br>");
+            document.write("HP Current: " + currentHostile.hostileHPCurrent + "<br>");
+            document.write("Refresh: " + currentHostile.hostileRefresh + "<br>");
+            document.write("Items: " + currentHostile.hostileItems[0] + "<br>");
+            //document.write("Weapon Name: " + currentHostile.hostileWeaponName + "<br>");
+            //document.write("Weapon Modifier: " + currentHostile.hostileWeaponModifier + "<br>");
+            //document.write("Weapon AP Cost: " + currentHostile.hostileWeaponAP + "<br>");
+            //document.write("Weapon Damage: " + currentHostile.hostileWeaponDMG + "<br>");
+            //document.write("Weapon Damage Type: " + currentHostile.hostileWeaponDMGType + "<br>");
+            //document.write("Weapon Refresh: " + currentHostile.hostileWeaponRefresh + "<br>");
+            //document.write("Weapon Hands Usage: " + currentHostile.hostileWeaponHands + "<br>");
+            document.write("Agility: " + currentHostile.hostileAgility + "<br>");
+            document.write("Endurance: " + currentHostile.hostileEndurance + "<br>");
+            document.write("Expertise: " + currentHostile.hostileExpertise + "<br>");
+            document.write("Cunning: " + currentHostile.hostileCunning + "<br>");
+            document.write("Intelligence: " + currentHostile.hostileIntelligence + "<br>" + "<br>");
+            return;
         }
         else {
-            document.write("No hostiles found!");
+            //document.write("No hostiles found!");
         }
     }
 };
 
-/* Planetary Combat Function
-var planetaryCombat = function (player, hostile){
+/* 12-sided Die */
+var dieRoll = function () {
+    var roll = Math.round(Math.random() * 12) % 12 + 1;
+    //document.write("Roll: " + roll + "<br>");
+    return roll;
+};
 
-}
-*/
+
+/* Generate To Hit */
+var toHit = function (attacker, defender){
+    var offense = 0;
+    var defense = 0;
+    var result = 0;
+    var curDie;
+    if (attacker.type === "player"){
+        //document.write("player Expertise: " + attacker.playerExpertise + "<br>");
+        //document.write("player weapon mod: " + attacker.playerWeaponModifier + "<br>");
+        offense = attacker.playerExpertise + attacker.playerWeaponModifier;
+        defense = defender.hostileAgility + defender.hostileDefenseModifier;
+        curDie = dieRoll();
+        result = offense + curDie - defense;
+        //document.write("Dieroll: " + curDie + "<br>");
+        //document.write("Offense: " + offense + "<br>");
+        //document.write("Defense: " + defense + "<br>");
+        //document.write("Result: " + result + "<br>");
+        if (result >= 10){
+            document.write("Player successfully hit hostile!<br>");
+            return true;
+        }
+        else {
+            return false;
+        }
+    }
+    else {
+        //document.write("hostile Expertise: " + attacker.hostileExpertise + "<br>");
+        //document.write("hostile weapon mod: " + attacker.hostileWeaponModifier + "<br>");
+        offense = attacker.hostileExpertise + attacker.hostileWeaponModifier;
+        defense = defender.playerAgility + defender.playerDefenseModifier;
+        curDie = dieRoll();
+        result = offense + curDie - defense;
+        //document.write("Dieroll: " + curDie + "<br>");
+        //document.write("Offense: " + offense + "<br>");
+        //document.write("Defense: " + defense + "<br>");
+        document.write("Result: " + result + "<br>");
+        if (result >= 10){
+            document.write("Hostile successfully hit player!<br>");
+            return true;
+        }
+        else {
+            return false;
+        }
+    }
+};
+
+/* Planetary Combat Function */
+var planetaryCombat = function (attacker, defender){
+    var damageDealt = 0;
+    if (APCheck(attacker)){
+        var toHitSuccess = toHit(attacker, defender);
+        if (toHitSuccess){
+            hitCount++;
+            if (attacker.type === "player"){
+                if (attacker.playerWeaponDMG <= defender.hostileEndurance){
+                    damageDealt = 1;
+                    //document.write("player weapon dmg: " + attacker.playerWeaponDMG + "<br>");
+                    //document.write("hostile endurance: " + defender.hostileEndurance + "<br>");
+                    defender.hostileHPCurrent = defender.hostileHPCurrent - damageDealt;
+                    if (deathCheck(defender)){
+                        return false;
+                    }
+                    else {
+                        document.write("Hostile Current HP: " + defender.hostileHPCurrent + "<br>");
+                        return true;
+                    }
+                }
+                else {
+                    damageDealt = attacker.playerWeaponDMG - defender.hostileEndurance;
+                    //document.write("player weapon dmg: " + attacker.playerWeaponDMG + "<br>");
+                    //document.write("hostile endurance: " + defender.hostileEndurance + "<br>");
+                    defender.hostileHPCurrent = defender.hostileHPCurrent - damageDealt;
+                    if (deathCheck(defender)){
+                        return false;
+                    }
+                    else{
+                        document.write("Hostile Current HP: " + defender.hostileHPCurrent + "<br>");
+                        return true;
+                    }
+                }
+            }
+            else {
+                if (attacker.hostileWeaponDMG <= defender.playerEndurance){
+                    damageDealt = 1;
+                    defender.playerHPCurrent = defender.playerHPCurrent - damageDealt;
+                    if (deathCheck(defender)){
+                        return false;
+                    }
+                    else {
+                        document.write("Player Current HP: " + defender.playerHPCurrent + "<br>");
+                        return true;
+                    }
+                }
+                else {
+                    damageDealt = attacker.hostileWeaponDMG - defender.playerEndurance;
+                    defender.playerHPCurrent = defender.playerHPCurrent - damageDealt;
+                    if (deathCheck(defender)){
+                        return false;
+                    }
+                    else{
+                        document.write("Player Current HP: " + defender.playerHPCurrent + "<br>");
+                        return true;
+                    }
+                }
+            }
+        }
+        else {
+            document.write("Missed!<br>");
+            return true;
+        }
+    }
+    else {
+        return;
+    }
+};
+
+/* AP Check */
+var APCheck = function (attacker) {
+    if(attacker.type === "player"){
+        if (attacker.playerAPCurrent >= attacker.playerWeaponAP){
+            attacker.playerAPCurrent = attacker.playerAPCurrent - attacker.playerWeaponAP;
+            document.write("Player's Current AP after attack: " + attacker.playerAPCurrent + "<br>");
+            return true;
+        }
+        else {
+            document.write("Player does not have enough AP!<br>");
+            return false;
+        }
+    }
+    else {
+        if (attacker.hostileAPCurrent >= attacker.hostileWeaponAP){
+            attacker.hostileAPCurrent = attacker.hostileAPCurrent - attacker.hostileWeaponAP;
+            document.write("Hostile's Current AP after attack: " + attacker.hostileAPCurrent + "<br>");
+            return true;
+        }
+        else {
+            document.write("Hostile does not have enough AP!<br>");
+            return false;
+        }
+    }
+};
+
+/* Refresh AP */
+var APRefresh = function (user) {
+    if (user.type === "player"){
+        user.playerAPCurrent = user.playerAPCurrent + user.playerRefresh;
+        if (user.playerAPCurrent > user.playerAPMax) {
+            user.playerAPCurrent = user.playerAPMax;
+        }
+        document.write("Player is Refreshed! Current AP is: " + user.playerAPCurrent + "<br>");
+    }
+    else{
+        user.hostileAPCurrent = user.hostileAPCurrent + user.hostileRefresh;
+        if (user.hostileAPCurrent > user.hostileAPMax) {
+            user.hostileAPCurrent = user.hostileAPMax;
+        }
+        document.write("Hostile is Refreshed! Current AP is: " + user.hostileAPCurrent + "<br>");
+    }
+};
+
+/* Check Death */
+var deathCheck = function (user) {
+    if (user.type === "player"){
+        if (user.playerHPCurrent <= 0){
+            document.write("Player has died!");
+            return true;
+        }
+        else {
+            return false;
+        }
+    }
+    else {
+        if (user.hostileHPCurrent <= 0){
+            document.write("Hostile has died!<br>");
+            return true;
+        }
+        else {
+            return false;  
+        }
+    }
+};
+
+/* Planetary Combat Arena */
+var planetaryCombatArena = function (players, hostiles) {
+    return;
+};
 
 /* ********************************************************************************************************** */
 /* Run simulation */
-document.write("Checkpoint 6");
-var player1 = player("Carl", 5, 10, 3, "Six Shooter", 3, 2, 2, 2, 1);
-var player2 = player("Steve", 6, 8, 4, "Hand Cannon", 1, 3, 5, 1, 2);
-var hostile1 = hostile("Hank", 4, 5, 2, "Balmoen Quantum Disruptor", 3, 2, 2, 2, 1);
-document.write("Checkpoint 4");
+commonGearDeck = commonGearGenerator();
+//document.write("Checkpoint 6");
+var player1 = player("Carl", 5, 10, 3, 3, 2, 2, 2, 1);
+var player2 = player("Steve", 6, 8, 4, 1, 3, 5, 1, 2);
+var hostile1 = hostile("Hank", 4, 5, 2, 3, 2, 2, 2, 1);
+player1.playerItems[0] = "Six Shooter";
+player1.playerItems[1] = "Plasma Rifle";
+player2.playerItems[0] = "Hand Cannon";
+player2.playerItems[1] = "Mark 1";
+hostile1.hostileItems[0] = "Balmoen Quantum Disruptor";
+//document.write("Checkpoint 4");
 players[0] = player1;
 players[1] = player2;
 hostiles[0] = hostile1;
-document.write("Checkpoint 5");
+//document.write("Checkpoint 5");
+//document.write("Current Players: " + players[0].playerName);
 displayInfo("Carl");
 displayInfo("Steve");
 displayInfo("Hank");
-
+/*
+for(var i=0; i < 50; i++){
+    var battleContinue = true;
+    battleContinue = planetaryCombat(player1, hostile1);
+    if (battleContinue === false){
+        break;
+    }
+    battleContinue = planetaryCombat(player2, hostile1);
+    if (battleContinue === false){
+        break;
+    }
+    battleContinue = planetaryCombat(hostile1, player1);
+    if (battleContinue === false){
+        break;
+    }
+    battleContinue = planetaryCombat(hostile1, player2);
+    if (battleContinue === false){
+        break;
+    }
+    APRefresh(player1);
+    APRefresh(player2);
+    APRefresh(hostile1);
+};
+*/
+document.write("hitCount: " + hitCount + "<br>");
 </script>
 </body>
 
