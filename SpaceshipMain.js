@@ -17,7 +17,10 @@ var hitCount = 0;
 var players = [];
 var hostiles = [];
 var pCombatPlayerTargetSelectCheck = false;
-var gameLoop, gameLoop2;
+//var gameLoop, gameLoop2;
+var numPlayers, numHostiles;
+var currentPlayers, currentHostiles;
+var activePlayer = 0;
 
 /* Weapons Definition Arrays */
 /* Weapons have a name, combat modifier, ap cost, damage, damage type, refreshrate(0 for no exhaust, 1 for single exhaust, 2+ for more) and number of hands used. */
@@ -1060,19 +1063,22 @@ var planetaryCombatArena = function (ps2, hs2) {
     var tpCount = 0;
     var pCount = 0;
     var hCount = 0;
-    var currentPlayers = [];
-    var currentHostiles = [];
-    var currentPlayer = new Object(); 
-    var currentHostile = new Object();
-    var numPlayers, numHostiles = 0;
-    var battleContinue = true;
-    var hold = false;
-    var tempArray = [];
-    var i, j;
-    var currentPlayerTarget = new Object();
-    var currentPlayerTargetName = "";
-    var currentHostileTarget = new Object();
-    // Match string input of names "Carl, Steve, etc..." to the objects in their arrays.
+    //var currentPlayers = [];
+    //var currentHostiles = [];
+    //var currentPlayer = new Object(); 
+    //var currentHostile = new Object();
+    //var numPlayers, numHostiles = 0;
+    //var battleContinue = true;
+    //var hold = false;
+    //var tempArray = [];
+    //var i, j;
+    //var currentPlayerTarget = new Object();
+    //var currentPlayerTargetName = "";
+    //var currentHostileTarget = new Object();
+    numPlayers = 0;
+    numHostiles = 0;
+    currentPlayers = [];
+    currentHostiles = [];
     for (tpCount = 0; tpCount < tempPlayers.length; tpCount++){
         if (tempPlayers[tpCount] === players[pCount].playerName){
             currentPlayers.push(players[pCount]);
@@ -1110,6 +1116,8 @@ var planetaryCombatArena = function (ps2, hs2) {
     numHostiles = currentHostiles.length;
     document.getElementById("pCombatOutput").a.value += "Number of Players: " + numPlayers + '\n';
     document.getElementById("pCombatOutput").a.value += "Number of Hostiles: " + numHostiles + '\n';
+    gameLoop();
+    /*
     gameLoop = setInterval(function(){ 
         //document.getElementById("pCombatOutput").a.value += "Hello3" + '\n';
         // Player's turn
@@ -1165,15 +1173,70 @@ var planetaryCombatArena = function (ps2, hs2) {
             }
         }
     }, 100);
+    */
     //rewrites output to indicate while loop has ended
     //document.getElementById("pCombatOutput").a.value = "Hello11" + '\n';
     return;
 };
 
-var pCombatHostilesTurn = function (chs, cps) {
+var showListOfHostiles = function(callback){
+    var currentPlayerTargetName;
+    var currentPlayerTarget;
+    // Generate Hostiles List and makes it visible
+    initHostilesSelectListOption("pCombatPlayerTargetSelectOptionsList", 0, numHostiles, currentHostiles);
+    toggle_visibility("pCombatPlayerTargetSelectDiv");
+    // Sets current Hostile to be the selection from list
+    currentPlayerTargetName = document.getElementById("pCombatPlayerTargetSelectOptionsList").options[document.getElementById("pCombatPlayerTargetSelectOptionsList").selectedIndex].text;
+    for (hCount = 0; hCount < numHostiles; hCount++){
+        if (currentPlayerTargetName === currentHostiles[hCount].hostileName){
+            currentPlayerTarget = hostiles[hCount];
+            hCount = numHostiles;
+        }
+    }
+    document.getElementById("pCombatOutput").a.value += "Current Player's Target: " + currentPlayerTarget.hostileName + '\n';
+    "pCombatPlayerTargetSelectButton".button.onclick = function () {
+        //Reset Hostiles List and make it invisible
+        toggle_visibility("pCombatPlayerTargetSelectDiv");
+        resetHostilesSelectListOption("pCombatPlayerTargetSelectOptionsList");
+        callback(currentPlayerTarget);
+    };
+};
+
+var playerTurn = function(player, next) {
+    showListOfHostiles(function(currentPlayerTarget) {
+        battleContinue = planetaryCombat(currentPlayer, currentPlayerTarget);
+        document.getElementById("pCombatOutput").a.value += "battleContinue: " + battleContinue + '\n';
+        if (battleContinue === false){
+            currentHostiles.remove(currentPlayerTarget);
+            hostiles.remove(currentPlayerTarget);
+            if (currentHostiles.length > 0){
+                battleContinue = true;
+            }
+        }
+       next();
+    });
+};
+
+var gameLoop = function () {
+   playerTurn(players[activePlayer], function() {
+       activePlayer += 1;
+       if (activePlayer >= players.length) {
+           activePlayer = 0;
+           // Run Hostiles turn after all players have gone
+           pCombatHostilesTurn();
+           // Run Refresh at the end of the round
+           pCombatRefreshRound();
+       }
+       else {
+        gameLoop();
+       }
+   });
+};
+
+var pCombatHostilesTurn = function () {
     // Hostile's turn
-    var currentHostiles = chs;
-    var currentPlayers = cps;
+    //var currentHostiles = chs;
+    //var currentPlayers = cps;
     var battleContinue = true;
     for (j=0;j<numHostiles;j++){
         currentHostile = currentHostiles[j];
@@ -1189,13 +1252,13 @@ var pCombatHostilesTurn = function (chs, cps) {
                 if (currentPlayers.length > 0){
                     battleContinue = true;
                 }
-                else {
-                    clearInterval(gameLoop);
-                    j = numHostiles;
-                }
             }
         }
     }
+    return;
+};
+
+var pCombatRefreshRound = function () {
     // Refresh Players/Hostiles
     for (i=0;i<numPlayers;i++){
         APRefresh(currentPlayers[i]);
@@ -1203,7 +1266,6 @@ var pCombatHostilesTurn = function (chs, cps) {
     for (i=0;i<numHostiles;i++){
         APRefresh(currentHostiles[i]);
     }
-    return [currentHostiles, currentPlayers];
 };
 
 var pCombatPlayerTargetSelectCheckFC = function () {
@@ -1262,9 +1324,11 @@ var run = function () {
     var player2 = player("Steve", 6, 8, 4, 1, 3, 5, 1, 2, 3);
     //var hostile = (name, apMax, hpMax, refresh, combatMod, physicalDefenseMod, energyDefenseMod, APcost, DMG, DMGType, agility, endurance, expertise)
     var hostile1 = hostile("Hank", 4, 5, 2, 2, -1, 0, 2, 2, "energy", 3, 2, 2);
+    var hostile2 = hostile("Bob", 4, 5, 2, 2, -1, 0, 2, 2, "physical", 3, 2, 2);
     players[0] = player1;
     players[1] = player2;
     hostiles[0] = hostile1;
+    hostiles[1] = hostile2;
     player1.playerItems.push(commonGearLookup("Six Shooter"));
     player1.playerItems.push(commonGearLookup("Plasma Rifle"));
     player2.playerItems.push(commonGearLookup("Hand Cannon"));
