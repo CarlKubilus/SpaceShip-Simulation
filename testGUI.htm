@@ -1,0 +1,119 @@
+<html>
+
+<head>
+<style>
+#toolbar 	{	
+			margin: 0;
+			padding: 0;
+			width: 262px;
+			background: buttonface;
+			border-top: 1px solid buttonhighlight;
+			border-left: 1px solid buttonhighlight;
+			border-bottom: 1px solid buttonshadow;
+			border-right: 1px solid buttonshadow;
+			text-align:right;
+		  	}
+			
+.button 	{
+			background: buttonface; 
+			border: 1px solid buttonface;
+			margin: 1; 
+			}
+			
+.raised		{ 
+			border-top: 1px solid buttonhighlight;
+			border-left: 1px solid buttonhighlight;
+			border-bottom: 1px solid buttonshadow;
+			border-right: 1px solid buttonshadow;
+			background: buttonface;
+			margin: 1;
+			}
+			
+.pressed	{
+			border-top: 1px solid buttonshadow;
+			border-left: 1px solid buttonshadow;
+			border-bottom: 1px solid buttonhighlight;
+			border-right: 1px solid buttonhighlight;
+			background: buttonface;
+			margin: 1;
+			}
+</style>
+<title></title>
+<form name="my_form">
+<div id="toolbar">
+<img class="button" 
+ onmouseover="mouseover(this);" 
+ onmouseout="mouseout(this);" 
+ onmousedown="mousedown(this);" 
+ onmouseup="mouseup(this);" 
+ onclick="format_sel('b');" 
+ src="http://www.oreillynet.com/javascript/2001/12/21/graphics/bold.gif" 
+ width="16" height="16" 
+ align="middle" 
+ alt="click to make your selection bold">
+<img class="button" 
+ onmouseover="mouseover(this);" 
+ onmouseout="mouseout(this);" 
+ onmousedown="mousedown(this);" 
+ onmouseup="mouseup(this);" 
+ onclick="format_sel('i');" 
+ src="http://www.oreillynet.com/javascript/2001/12/21/graphics/italic.gif" 
+ width="16" height="16" 
+ align="middle" 
+ alt="click to make your selection italic">
+<img class="button" 
+ onmouseover="mouseover(this);" 
+ onmouseout="mouseout(this);" 
+ onmousedown="mousedown(this);" 
+ onmouseup="mouseup(this);" 
+ onclick="insert_link();" 
+ src="http://www.oreillynet.com/javascript/2001/12/21/graphics/link.gif" 
+ width="32" height="16" 
+ align="middle" 
+ alt="click to add a link"></div>
+<textarea cols="30" rows="6" name="my_textarea"></textarea>
+</form>
+</head>
+
+<body>
+<SCRIPT LANGUAGE="JavaScript">
+// JavaScript Document
+function format_sel(v) {
+  var str = document.selection.createRange().text;
+  document.my_form.my_textarea.focus();
+  var sel = document.selection.createRange();
+  sel.text = "<" + v + ">" + str + "</" + v + ">";
+  return;
+}
+
+function insert_link() {
+  var str = document.selection.createRange().text;
+  document.my_form.my_textarea.focus();
+  var my_link = prompt("Enter URL:","http://");
+  if (my_link != null) {
+    var sel = document.selection.createRange();
+	sel.text = "<a href=\"" + my_link + "\">" + str + "</a>";
+  }
+  return;
+}
+
+function mouseover(el) {
+  el.className = "raised";
+}
+
+function mouseout(el) {
+  el.className = "button";
+}
+
+function mousedown(el) {
+  el.className = "pressed";
+}
+
+function mouseup(el) {
+  el.className = "raised";
+}
+
+</SCRIPT>
+</body>
+
+</html>
