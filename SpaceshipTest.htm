@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <head>
+<link rel="stylesheet" type="text/css" href="SpaceShipStyle.css">
 <style>
 input {
     padding: 5px;
@@ -30,7 +31,7 @@ input[type="submit"]{
 
 </div>
 
-<div class="one" id="pCreatorDiv" style="display:none">
+<div class="one" id="pCreatorDiv">
 <form id="frm1">
 Player Name:<input type="textarea" name="pName" value="">
 AP:<input type="text" name="AP" value="" size="3">
@@ -46,7 +47,7 @@ Charisma:<input type="text" name="Charisma" value="" size="3">
 </form>
 </div>
 
-<div class="one" id="infoDisplayDiv" style="display:none">
+<div class="one" id="infoDisplayDiv">
 <form id="frm2">
 <input type="text" placeholder="Type Name to see info" id="a" value="" size="20"><br>
 <button type="button" id="infoDisplayButton" onclick="displayInfoHelper()">Display Info</button>
@@ -58,7 +59,7 @@ Charisma:<input type="text" name="Charisma" value="" size="3">
 </form>
 </div>
 
-<div class="one" id="pCombatPlayerTargetSelectDiv" style="display:none">
+<div class="two" id="pCombatPlayerTargetSelectDiv">
 <form id="pCombatPlayerTargetSelectOptions">
 Select a Hostile:
 <select id="pCombatPlayerTargetSelectOptionsList">
@@ -67,7 +68,7 @@ Select a Hostile:
 </form>
 </div>
 
-<div class="one" id="pCombatDiv" style="display:none">
+<div class="two" id="pCombatDiv">
 <form id="frm3">
 Players:<input type="text" id="ps" value="" size="5">
 Hostiles:<input type="text" id="hs" value="" size="5">
@@ -85,14 +86,7 @@ Hostiles:<input type="text" id="hs" value="" size="5">
 
 <script>
 run();
-function toggle_visibility(id) {
-       var e = document.getElementById(id);
-       if(e.style.display === "block")
-          e.style.display = "none";
-       else
-          e.style.display = "block";
-       return false;
-}
+
 
 function displayInfoHelper () {
     var y = document.getElementById("frm2").a.value;

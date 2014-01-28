@@ -859,7 +859,7 @@ var toHit = function (attacker, defender){
         //document.write("Defense: " + defense + "<br>");
         //document.write("Result: " + result + "<br>");
         if (result >= 10){
-            document.getElementById("pCombatOutput").a.value += ("Player successfully hit hostile!" + '\n');
+            document.getElementById("pCombatOutput").a.value += (attacker.playerName + " hit " + defender.hostileName + "!" + '\n');
             //document.write("Player successfully hit hostile!<br>");
             return true;
         }
@@ -879,7 +879,7 @@ var toHit = function (attacker, defender){
         //document.write("Defense: " + defense + "<br>");
         //document.write("Result: " + result + "<br>");
         if (result >= 10){
-            document.getElementById("pCombatOutput").a.value += ("Hostile successfully hit player!" + '\n');
+            document.getElementById("pCombatOutput").a.value += (attacker.hostileName + " hit " + defender.playerName + "!" + '\n');
             //document.write("Hostile successfully hit player!<br>");
             return true;
         }
@@ -914,7 +914,7 @@ var planetaryCombat = function (attacker, defender){
                         return false;
                     }
                     else {
-                        document.getElementById("pCombatOutput").a.value += ("Hostile Current HP: " + defender.hostileHPCurrent + '\n');
+                        document.getElementById("pCombatOutput").a.value += (defender.hostileName + " current HP: " + defender.hostileHPCurrent + '\n');
                         //document.write("Hostile Current HP: " + defender.hostileHPCurrent + "<br>");
                         return true;
                     }
@@ -928,7 +928,7 @@ var planetaryCombat = function (attacker, defender){
                         return false;
                     }
                     else{
-                        document.getElementById("pCombatOutput").a.value += ("Hostile Current HP: " + defender.hostileHPCurrent + '\n');
+                        document.getElementById("pCombatOutput").a.value += (defender.hostileName + " current HP: " + defender.hostileHPCurrent + '\n');
                         //document.write("Hostile Current HP: " + defender.hostileHPCurrent + "<br>");
                         return true;
                     }
@@ -951,7 +951,7 @@ var planetaryCombat = function (attacker, defender){
                         return false;
                     }
                     else {
-                        document.getElementById("pCombatOutput").a.value += ("Player Current HP: " + defender.playerHPCurrent + '\n');
+                        document.getElementById("pCombatOutput").a.value += (defender.playerName + " current HP: " + defender.playerHPCurrent + '\n');
                         //document.write("Player Current HP: " + defender.playerHPCurrent + "<br>");
                         return true;
                     }
@@ -963,7 +963,7 @@ var planetaryCombat = function (attacker, defender){
                         return false;
                     }
                     else{
-                        document.getElementById("pCombatOutput").a.value += ("Player Current HP: " + defender.playerHPCurrent + '\n');
+                        document.getElementById("pCombatOutput").a.value += (defender.playerName + " current HP: " + defender.playerHPCurrent + '\n');
                         //document.write("Player Current HP: " + defender.playerHPCurrent + "<br>");
                         return true;
                     }
@@ -971,7 +971,13 @@ var planetaryCombat = function (attacker, defender){
             }
         }
         else {
-            document.getElementById("pCombatOutput").a.value += ("Missed!" + '\n');
+            if(attacker.type === "player"){
+                document.getElementById("pCombatOutput").a.value += (attacker.playerName + " missed " + defender.hostileName + "!" + '\n');
+            }
+            else {
+                document.getElementById("pCombatOutput").a.value += (attacker.hostileName + " missed " + defender.playerName + "!" + '\n');
+            }
+            //document.getElementById("pCombatOutput").a.value += ("Missed!" + '\n');
             //document.write("Missed!<br>");
             return true;
         }
@@ -986,12 +992,12 @@ var APCheck = function (attacker) {
     if(attacker.type === "player"){
         if (attacker.playerAPCurrent >= attacker.playerWeaponAP){
             attacker.playerAPCurrent = attacker.playerAPCurrent - attacker.playerWeaponAP;
-            document.getElementById("pCombatOutput").a.value += ("Player's Current AP after attack: " + attacker.playerAPCurrent + '\n');
+            document.getElementById("pCombatOutput").a.value += (attacker.playerName + " current AP after attack: " + attacker.playerAPCurrent + '\n');
             //document.write("Player's Current AP after attack: " + attacker.playerAPCurrent + "<br>");
             return true;
         }
         else {
-            document.getElementById("pCombatOutput").a.value += ("Player does not have enough AP!" + '\n');
+            document.getElementById("pCombatOutput").a.value += (attacker.playerName + " does not have enough AP!" + '\n');
             //document.write("Player does not have enough AP!<br>");
             return false;
         }
@@ -999,12 +1005,12 @@ var APCheck = function (attacker) {
     else {
         if (attacker.hostileAPCurrent >= attacker.hostileWeaponAP){
             attacker.hostileAPCurrent = attacker.hostileAPCurrent - attacker.hostileWeaponAP;
-            document.getElementById("pCombatOutput").a.value += ("Hostile's Current AP after attack: " + attacker.hostileAPCurrent + '\n');
+            document.getElementById("pCombatOutput").a.value += (attacker.hostileName + " current AP after attack: " + attacker.hostileAPCurrent + '\n');
             //document.write("Hostile's Current AP after attack: " + attacker.hostileAPCurrent + "<br>");
             return true;
         }
         else {
-            document.getElementById("pCombatOutput").a.value += ("Hostile does not have enough AP!" + '\n');
+            document.getElementById("pCombatOutput").a.value += (attacker.hostileName + " does not have enough AP!" + '\n');
             //document.write("Hostile does not have enough AP!<br>");
             return false;
         }
@@ -1018,7 +1024,7 @@ var APRefresh = function (user) {
         if (user.playerAPCurrent > user.playerAPMax) {
             user.playerAPCurrent = user.playerAPMax;
         }
-        document.getElementById("pCombatOutput").a.value += ("Player is Refreshed! Current AP is: " + user.playerAPCurrent + '\n');
+        document.getElementById("pCombatOutput").a.value += (user.playerName + " is Refreshed! Current AP is: " + user.playerAPCurrent + '\n');
         //document.write("Player is Refreshed! Current AP is: " + user.playerAPCurrent + "<br>");
     }
     else{
@@ -1026,7 +1032,7 @@ var APRefresh = function (user) {
         if (user.hostileAPCurrent > user.hostileAPMax) {
             user.hostileAPCurrent = user.hostileAPMax;
         }
-        document.getElementById("pCombatOutput").a.value += ("Hostile is Refreshed! Current AP is: " + user.hostileAPCurrent + '\n');
+        document.getElementById("pCombatOutput").a.value += (user.hostileName + " is Refreshed! Current AP is: " + user.hostileAPCurrent + '\n');
         //document.write("Hostile is Refreshed! Current AP is: " + user.hostileAPCurrent + "<br>");
     }
 };
@@ -1179,6 +1185,22 @@ var planetaryCombatArena = function (ps2, hs2) {
     return;
 };
 
+/*
+var playerTurn = function(player, callGL) {
+    showListOfHostiles(function(currentPlayerTarget) {
+        battleContinue = planetaryCombat(currentPlayer, currentPlayerTarget);
+        document.getElementById("pCombatOutput").a.value += "battleContinue: " + battleContinue + '\n';
+        if (battleContinue === false){
+            currentHostiles.remove(currentPlayerTarget);
+            hostiles.remove(currentPlayerTarget);
+            if (currentHostiles.length > 0){
+                battleContinue = true;
+            }
+        }
+       callGL();
+    });
+};
+*/
 var showListOfHostiles = function(callback){
     var currentPlayerTargetName;
     var currentPlayerTarget;
@@ -1194,29 +1216,33 @@ var showListOfHostiles = function(callback){
         }
     }
     document.getElementById("pCombatOutput").a.value += "Current Player's Target: " + currentPlayerTarget.hostileName + '\n';
-    "pCombatPlayerTargetSelectButton".button.onclick = function () {
+    document.getElementById("pCombatPlayerTargetSelectButton").addEventListener('click', function(event) {
         //Reset Hostiles List and make it invisible
         toggle_visibility("pCombatPlayerTargetSelectDiv");
         resetHostilesSelectListOption("pCombatPlayerTargetSelectOptionsList");
         callback(currentPlayerTarget);
-    };
-};
-
-var playerTurn = function(player, next) {
-    showListOfHostiles(function(currentPlayerTarget) {
-        battleContinue = planetaryCombat(currentPlayer, currentPlayerTarget);
-        document.getElementById("pCombatOutput").a.value += "battleContinue: " + battleContinue + '\n';
-        if (battleContinue === false){
-            currentHostiles.remove(currentPlayerTarget);
-            hostiles.remove(currentPlayerTarget);
-            if (currentHostiles.length > 0){
-                battleContinue = true;
-            }
-        }
-       next();
     });
 };
 
+var playerTurn = function(player, callGL) {
+    showListOfHostiles(playerTurnFC(a));
+    gameLoopFC();
+};
+
+var playerTurnFC = function(currentPlayerTarget) {
+    var currentPlayer = players[activePlayer];
+    battleContinue = planetaryCombat(currentPlayer, currentPlayerTarget);
+    document.getElementById("pCombatOutput").a.value += "battleContinue: " + battleContinue + '\n';
+    if (battleContinue === false){
+        currentHostiles.remove(currentPlayerTarget);
+        hostiles.remove(currentPlayerTarget);
+        if (currentHostiles.length > 0){
+            battleContinue = true;
+        }
+    }
+};
+
+/*
 var gameLoop = function () {
    playerTurn(players[activePlayer], function() {
        activePlayer += 1;
@@ -1231,6 +1257,26 @@ var gameLoop = function () {
         gameLoop();
        }
    });
+};
+*/
+
+var gameLoop = function () {
+   playerTurn(players[activePlayer], gameLoopFC());
+};
+
+var gameLoopFC = function () {
+    activePlayer += 1;
+   if (activePlayer >= players.length) {
+       activePlayer = 0;
+       // Run Hostiles turn after all players have gone
+       pCombatHostilesTurn();
+       // Run Refresh at the end of the round
+       pCombatRefreshRound();
+   }
+   /*else {
+    gameLoop();
+   }
+   */
 };
 
 var pCombatHostilesTurn = function () {
@@ -1314,7 +1360,17 @@ var hostileTargetSelect = function (group) {
     return lowestHP;
 };
 
-
+function toggle_visibility(id) {
+       var e = document.getElementById(id);
+       if(e.style.display === "block"){
+          e.style.display = "none";
+       }
+       else {
+          e.style.display = "block";
+       }
+       document.getElementById("pCombatOutput").a.value += "Toggle Visibility Hello!" + '\n';
+       return false;
+}
 /* ********************************************************************************************************** */
 /* Run simulation */
 var run = function () {
