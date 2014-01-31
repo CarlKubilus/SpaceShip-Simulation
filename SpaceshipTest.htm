@@ -21,14 +21,14 @@ input[type="submit"]{
 </head>
 
 <body>
+<center>
 <p> Welcome to the Spaceship! Combat Simulator! </p>
-<p> Please select an option </p>
+</center>
 
 <div id="initialMenu" style="display:block">
 <button type="button" id="openPCreatorButton" onclick="toggle_visibility('pCreatorDiv')">Create a new Player?</button>
 <button type="button" id="openInfoDisplayButton" onclick="toggle_visibility('infoDisplayDiv')">Lookup Current Player Info?</button>
 <button type="button" id="openPCombatButton" onclick="toggle_visibility('pCombatDiv')">Engage in Combat?</button>
-
 </div>
 
 <div class="one" id="pCreatorDiv">
@@ -59,6 +59,15 @@ Charisma:<input type="text" name="Charisma" value="" size="3">
 </form>
 </div>
 
+<div class="two" id="pCombatPlayerWeaponSelectDiv">
+<form id="pCombatPlayerWeaponSelectOptions">
+Select a Weapon:
+<select id="pCombatPlayerWeaponSelectOptionsList">
+</select>
+<button type="button" id="pCombatPlayerWeaponSelectButton">Confirm Selection</button>
+</form>
+</div>
+
 <div class="two" id="pCombatPlayerTargetSelectDiv">
 <form id="pCombatPlayerTargetSelectOptions">
 Select a Hostile:
@@ -80,6 +89,7 @@ Hostiles:<input type="text" id="hs" value="" size="5">
 </textarea>
 </form>
 </div>
+
 
 
 
@@ -116,6 +126,7 @@ function planetaryCombatHelper () {
     //document.getElementById("pCombatOutput").a.value += ps1;
     //document.getElementById("pCombatOutput").a.value += document.getElementById("frm3").ps.value;
     planetaryCombatArena(ps1, hs1);
+    document.getElementById("pCombatOutput").a.value += "Hello11" + '\n';
     return false;
 }
 

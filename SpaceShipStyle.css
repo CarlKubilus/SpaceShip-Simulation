@@ -10,3 +10,11 @@
     float:center;
     display:none;
 }
+
+.three
+{
+    display:none;
+    position : fixed;
+    top      : 0px;
+    right    : 0px;
+}

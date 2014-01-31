@@ -8,16 +8,18 @@
 6: Fix "Select Weapon" prompts/alerts. Requires GUI.
 7: Add armor to "deactivate item"
 8: Fix damage received by hostiles and players. Currently not adding up correctly with negatives/positives from armor
+9: Fix hostiletargetselect. A hostile would not select a player with resistence to their weapon.
 */
 
 /* Test Variable */
-var hitCount = 0;
+var turnCount = 0;
+var turnButtonClicks = 0;
 
 /* Important Data */
 var players = [];
 var hostiles = [];
 var pCombatPlayerTargetSelectCheck = false;
-//var gameLoop, gameLoop2;
+var battleContinue = true;
 var numPlayers, numHostiles;
 var currentPlayers, currentHostiles;
 var activePlayer = 0;
@@ -71,7 +73,7 @@ var commonGearGenerator = function (){
     curCard.effect4type = "None";
     curCard.hands = 0;
     returnArray.push(curCard);
-    //document.write(returnArray[0].name + "<br>");
+    //document.getElementById("pCombatOutput").a.value +=(returnArray[0].name + '\n');
     curCard = new Object();
     curCard.name = "Power Suit";
     curCard.type = "commonGear";
@@ -87,8 +89,8 @@ var commonGearGenerator = function (){
     curCard.effect4type = "None";
     curCard.hands = 0;
     returnArray.push(curCard);
-    //document.write(returnArray[0].name + "<br>");
-    //document.write(returnArray[1].name + "<br>");
+    //document.getElementById("pCombatOutput").a.value +=(returnArray[0].name + '\n');
+    //document.getElementById("pCombatOutput").a.value +=(returnArray[1].name + '\n');
     curCard = new Object();
     curCard.name = "Carbon Nano-mesh Skin";
     curCard.type = "commonGear";
@@ -263,17 +265,12 @@ var hostile = function(name, apMax, hpMax, refresh, combatMod, physicalDefenseMo
     h.hostileHPMax = hpMax;
     h.hostileHPCurrent = hpMax;
     h.hostileRefresh = refresh;
-    //h.hostileWeaponName = "None";
-    //h.hostileWeaponModifier = 0;
     h.hostileWeaponAP = APcost;
     h.hostileWeaponDMG = DMG;
     h.hostileWeaponDMGType = DMGType;
-    //h.hostileWeaponRefresh = 0;
     h.hostileAgility = agility;
     h.hostileEndurance = endurance;
     h.hostileExpertise = expertise;
-    //h.hostileCunning = cunning;
-    //h.hostileIntelligence = intelligence;
     h.hostilePhysicalDefenseModifier = physicalDefenseMod;
     h.hostileEnergyDefenseModifier = energyDefenseMod;
     h.hostileCombatModifier = combatMod;
@@ -281,24 +278,17 @@ var hostile = function(name, apMax, hpMax, refresh, combatMod, physicalDefenseMo
 };
 
 /* Select Weapon */
-var selectWeapon = function (player) {
-    var count = 0;
-    var choice;
+var selectWeapon = function () {
+    //var count = 0;
+    //var choice;
+    var player = currentPlayers[activePlayer];
     var currWeapon = new Object();
-    alert(player.playerName + " has these weapons to choose from:");
-    for (count; count < player.playerWeapons.length; count++){
-        alert((count+1) + ") " + player.playerWeapons[count].name);
-    }
-    //document.write("Select a weapon by number<br>");
-    choice = prompt("Which will you choose to use?", "Select a weapon by number.");
-    choice = parseInt(choice);
-    if (isNaN(choice) || choice > player.playerWeapons.length){
-        document.write("You did not choose a valid number!<br>");
-        return false;
-    }
-    else {
-        currWeapon = player.playerWeapons[choice-1];
-        document.write(player.playerName + " chose " + currWeapon.name + "!<br>");
+    initPlayersWeaponListOption("pCombatPlayerWeaponSelectOptionsList", player);
+    toggle_visibility("pCombatPlayerWeaponSelectDiv");
+    //document.getElementById("pCombatOutput").a.value += "Select a weapon by number" + '\n';
+    document.getElementById("pCombatPlayerWeaponSelectButton").addEventListener('click', function(event) {
+        currWeapon = playerWeaponSelection(player);
+        document.getElementById("pCombatOutput").a.value = (player.playerName + " chose " + currWeapon.name + '\n');
         player.playerWeaponName = currWeapon.name;
         player.playerWeaponModifier = currWeapon.combatMod;
         player.playerWeaponAP = currWeapon.APCost;
@@ -307,8 +297,61 @@ var selectWeapon = function (player) {
         player.playerWeaponRefresh = currWeapon.refreshRate;
         //player.playerWeaponHands = currWeapon.hands;
         player.playerCombatModifier = player.playerCombatModifier + player.playerWeaponModifier;
-        return true;
+        toggle_visibility("pCombatPlayerWeaponSelectDiv");
+        resetPlayersWeaponListOption("pCombatPlayerWeaponSelectOptionsList");
+        showListOfHostiles();
+    });
+    return;
+    //choice = prompt("Which will you choose to use?", "Select a weapon by number.");
+    //choice = parseInt(choice);
+    /*
+    if (isNaN(choice) || choice > player.playerWeapons.length){
+        document.getElementById("pCombatOutput").a.value +=("You did not choose a valid number!<br>");
+        return false;
     }
+    */
+};
+
+var playerWeaponSelection = function (player) {
+    var currentWeaponName;
+    var currentWeapon;
+    var i;
+    // Sets current Weapon to be the selection from list
+    currentWeaponName = document.getElementById("pCombatPlayerWeaponSelectOptionsList").options[document.getElementById("pCombatPlayerWeaponSelectOptionsList").selectedIndex].text;
+    for (i = 0; i < player.playerWeapons.length; i++){
+        if (currentWeaponName === player.playerWeapons[i].name){
+            currentWeapon = player.playerWeapons[i];
+            i = player.playerWeapons.length;
+        }
+    }
+    //document.getElementById("pCombatOutput").a.value += "Current Player's Weapon: " + currentPlayerTarget.hostileName + '\n';
+    return currentWeapon;
+};
+
+// Initialize list of weapons for player to select.
+var initPlayersWeaponListOption = function(id, player) {
+    var select, i, option;
+    select = document.getElementById(id);
+    for ( i = 0; i < player.playerWeapons.length; i++) {
+        option = document.createElement("option");
+        option.value = player.playerWeapons[i].name;
+        option.text = option.value;
+        select.appendChild(option);
+    }
+    //document.getElementById("pCombatOutput").a.value += "Weapon Init Hello!" + '\n';
+    return;
+};
+
+// Reset weapons list
+var resetPlayersWeaponListOption = function(id) {
+    var select, i;
+    select = document.getElementById(id);
+    for(i=select.options.length-1;i>=0;i--)
+    {
+        select.remove(i);
+    }
+    //document.getElementById("pCombatOutput").a.value += "Weapon Reset Hello!" + '\n';
+    return;
 };
 
 /* Remove Item */
@@ -321,7 +364,7 @@ var removeItem = function (player, item){
             return true;
         }
     }
-    document.write(player.playerName + " does not have the " + item + "<br>");
+    document.getElementById("pCombatOutput").a.value +=(player.playerName + " does not have the " + item + '\n');
     return false;
 };
 
@@ -340,7 +383,7 @@ var deactivateItem = function (player, item){
                         return true;
                     } 
                 }
-                document.write(player.playerName + " does not have the " + item + "<br>");
+                document.getElementById("pCombatOutput").a.value +=(player.playerName + " does not have the " + item + '\n');
                 return false;
             }
             else {
@@ -350,7 +393,7 @@ var deactivateItem = function (player, item){
             }
         }
     }
-    document.write(player.playerName + " does not have the " + item + " active!<br>");
+    document.getElementById("pCombatOutput").a.value +=(player.playerName + " does not have the " + item + " active!<br>");
     return false;
 };
 
@@ -358,15 +401,15 @@ var deactivateItem = function (player, item){
 var activateItem = function (player, item){
     var count = 0;
     var count2 = 0;
-    //document.write("Current Player: " + player.playerName + "<br>");
+    //document.getElementById("pCombatOutput").a.value +=("Current Player: " + player.playerName + '\n');
     for (count; count < player.playerItems.length; count++){
-        //document.write("currItem: " + player.playerItems[count].name + "<br>");
+        //document.getElementById("pCombatOutput").a.value +=("currItem: " + player.playerItems[count].name + '\n');
         if (player.playerItems[count].name === item){
             var currItem = player.playerItems[count];
             if (currItem.type2 === "weapon") {
                 if (currItem.hands > 0) {
                     if (player.handsUsed === 2) {
-                        document.write(player.playerName + " does not have enough free hands!<br>");
+                        document.getElementById("pCombatOutput").a.value +=(player.playerName + " does not have enough free hands!<br>");
                         return false;
                     }
                     else if (player.handsUsed === 1 && currItem.hands === 1){
@@ -376,7 +419,7 @@ var activateItem = function (player, item){
                         return true;
                     }
                     else if (player.handsUsed === 1 && currItem.hands === 2){
-                        document.write(player.playerName + " does not have enough free hands!<br>");
+                        document.getElementById("pCombatOutput").a.value +=(player.playerName + " does not have enough free hands!<br>");
                         return false;
                     }
                     else {
@@ -539,54 +582,54 @@ var activateItem = function (player, item){
                     return true;
                 }
                 else {
-                    document.write(player.playerName + " has too much armor active!<br>");
+                    document.getElementById("pCombatOutput").a.value +=(player.playerName + " has too much armor active!<br>");
                     return false;
                 }
             }
         }
     }
-    document.write(player.playerName + " does not have the " + item + " to activate!<br>");
+    document.getElementById("pCombatOutput").a.value +=(player.playerName + " does not have the " + item + " to activate!<br>");
     return false;
 };
 
 /* Common Gear Lookup */
 var commonGearLookup = function (name){
-    // document.write("Checkpoint 8!");
+    // document.getElementById("pCombatOutput").a.value +=("Checkpoint 8!");
     // var w = new Object();
     var index = 0;
     var deckLength = commonGearDeck.length;
-    //document.write("Length is: " + deckLength + "<br>");
+    //document.getElementById("pCombatOutput").a.value +=("Length is: " + deckLength + '\n');
     for (index; index < deckLength; index++){
-        //document.write("Current Common Gear: " + commonGearDeck[index].name + "<br>");
+        //document.getElementById("pCombatOutput").a.value +=("Current Common Gear: " + commonGearDeck[index].name + '\n');
         if (commonGearDeck[index].name === name){
-            //document.write("Current Common Gear: " + commonGearDeck[index].name + "<br>");
+            //document.getElementById("pCombatOutput").a.value +=("Current Common Gear: " + commonGearDeck[index].name + '\n');
             return commonGearDeck[index];
         }
     }
-    document.write("No weapon found!<br>");
+    document.getElementById("pCombatOutput").a.value +=("No weapon found!<br>");
     return "None";
 }; 
 
 /* Weapon Lookup OLD 
 var weaponLookup = function (name){
-    // document.write("Checkpoint 8!");
+    // document.getElementById("pCombatOutput").a.value +=("Checkpoint 8!");
     // var w = new Object();
     var index = 0;
     var returnArray = [];
     var commonWeaponsArrayLength = commonWeaponsArray.length;
-    //document.write("Length is: " + commonWeaponsArrayLength);
+    //document.getElementById("pCombatOutput").a.value +=("Length is: " + commonWeaponsArrayLength);
     var exoticWeaponsArrayLength = exoticWeaponsArray.length;
     for (index = 0; index < commonWeaponsArrayLength; index = index + 7){
-        //document.write("Index is: " + index);
+        //document.getElementById("pCombatOutput").a.value +=("Index is: " + index);
         if (commonWeaponsArray[index] === name){
-            //document.write("Name is: " + name);
-            //document.write("array[0] is: " + commonWeaponsArray[index]);
-            //document.write("array[1] is: " + commonWeaponsArray[index+1]);
-            //document.write("array[2] is: " + commonWeaponsArray[index+2]);
-            //document.write("array[3] is: " + commonWeaponsArray[index+3]);
-            //document.write("array[4] is: " + commonWeaponsArray[index+4]);
-            //document.write("array[5] is: " + commonWeaponsArray[index+5]);
-            //document.write("array[6] is: " + commonWeaponsArray[index+6]);
+            //document.getElementById("pCombatOutput").a.value +=("Name is: " + name);
+            //document.getElementById("pCombatOutput").a.value +=("array[0] is: " + commonWeaponsArray[index]);
+            //document.getElementById("pCombatOutput").a.value +=("array[1] is: " + commonWeaponsArray[index+1]);
+            //document.getElementById("pCombatOutput").a.value +=("array[2] is: " + commonWeaponsArray[index+2]);
+            //document.getElementById("pCombatOutput").a.value +=("array[3] is: " + commonWeaponsArray[index+3]);
+            //document.getElementById("pCombatOutput").a.value +=("array[4] is: " + commonWeaponsArray[index+4]);
+            //document.getElementById("pCombatOutput").a.value +=("array[5] is: " + commonWeaponsArray[index+5]);
+            //document.getElementById("pCombatOutput").a.value +=("array[6] is: " + commonWeaponsArray[index+6]);
             returnArray[0] = commonWeaponsArray[index];
             returnArray[1] = commonWeaponsArray[index+1];
             returnArray[2] = commonWeaponsArray[index+2];
@@ -594,12 +637,12 @@ var weaponLookup = function (name){
             returnArray[4] = commonWeaponsArray[index+4];
             returnArray[5] = commonWeaponsArray[index+5];
             returnArray[6] = commonWeaponsArray[index+6];
-            //document.write(returnArray);
-            //document.write("Checkpoint 9!");
+            //document.getElementById("pCombatOutput").a.value +=(returnArray);
+            //document.getElementById("pCombatOutput").a.value +=("Checkpoint 9!");
             return  returnArray;
         }
         else {
-            //document.write("No weapon found! " + index);
+            //document.getElementById("pCombatOutput").a.value +=("No weapon found! " + index);
         }
     }
     
@@ -615,7 +658,7 @@ var weaponLookup = function (name){
             return  returnArray;
             }
         else {
-            //document.write("No weapon found! " + index);
+            //document.getElementById("pCombatOutput").a.value +=("No weapon found! " + index);
         }
     }
 }; */
@@ -706,7 +749,7 @@ var displayInfo = function (name){
             return returnString;
         }
         else {
-            //document.write("No players found!");
+            //document.getElementById("pCombatOutput").a.value +=("No players found!");
         }
     }
     for (count = 0; count < hostiles.length; count++){
@@ -745,7 +788,7 @@ var displayInfo = function (name){
             return returnString;
         }
         else {
-            //document.write("No hostiles found!");
+            //document.getElementById("pCombatOutput").a.value +=("No hostiles found!");
         }
     }
     return;
@@ -759,75 +802,75 @@ var displayInfo = function (name){
     for (count = 0; count < players.length; count++){
         if (name === players[count].playerName){
             currentPlayer = players[count];
-            document.write("Player Name: " + currentPlayer.playerName + "<br>");
-            document.write("AP Max: " + currentPlayer.playerAPMax + "<br>");
-            document.write("AP Current: " + currentPlayer.playerAPCurrent + "<br>");
-            document.write("HP Max: " + currentPlayer.playerHPMax + "<br>");
-            document.write("HP Current: " + currentPlayer.playerHPCurrent + "<br>");
-            document.write("Refresh: " + currentPlayer.playerRefresh + "<br>");
-            document.write("Hands Used: " + currentPlayer.handsUsed + "<br>");
-            document.write("Agility: " + currentPlayer.playerAgility + "<br>");
-            document.write("Endurance: " + currentPlayer.playerEndurance + "<br>");
-            document.write("Expertise: " + currentPlayer.playerExpertise + "<br>");
-            document.write("Cunning: " + currentPlayer.playerCunning + "<br>");
-            document.write("Intelligence: " + currentPlayer.playerIntelligence + "<br>");
-            document.write("Charisma: " + currentPlayer.playerCharisma + "<br>");
-            document.write("Items: <br>");
-            document.write("_______________________________________________<br>");
+            document.getElementById("pCombatOutput").a.value +=("Player Name: " + currentPlayer.playerName + '\n');
+            document.getElementById("pCombatOutput").a.value +=("AP Max: " + currentPlayer.playerAPMax + '\n');
+            document.getElementById("pCombatOutput").a.value +=("AP Current: " + currentPlayer.playerAPCurrent + '\n');
+            document.getElementById("pCombatOutput").a.value +=("HP Max: " + currentPlayer.playerHPMax + '\n');
+            document.getElementById("pCombatOutput").a.value +=("HP Current: " + currentPlayer.playerHPCurrent + '\n');
+            document.getElementById("pCombatOutput").a.value +=("Refresh: " + currentPlayer.playerRefresh + '\n');
+            document.getElementById("pCombatOutput").a.value +=("Hands Used: " + currentPlayer.handsUsed + '\n');
+            document.getElementById("pCombatOutput").a.value +=("Agility: " + currentPlayer.playerAgility + '\n');
+            document.getElementById("pCombatOutput").a.value +=("Endurance: " + currentPlayer.playerEndurance + '\n');
+            document.getElementById("pCombatOutput").a.value +=("Expertise: " + currentPlayer.playerExpertise + '\n');
+            document.getElementById("pCombatOutput").a.value +=("Cunning: " + currentPlayer.playerCunning + '\n');
+            document.getElementById("pCombatOutput").a.value +=("Intelligence: " + currentPlayer.playerIntelligence + '\n');
+            document.getElementById("pCombatOutput").a.value +=("Charisma: " + currentPlayer.playerCharisma + '\n');
+            document.getElementById("pCombatOutput").a.value +=("Items: <br>");
+            document.getElementById("pCombatOutput").a.value +=("_______________________________________________<br>");
             var count2 = 0;
             for (count2 = 0; count2 < currentPlayer.playerItems.length; count2++){
-                document.write((count2+1) + ") " + currentPlayer.playerItems[count2].name  + "<br>");
+                document.getElementById("pCombatOutput").a.value +=((count2+1) + ") " + currentPlayer.playerItems[count2].name  + '\n');
             }
-            document.write("_______________________________________________<br>");
-            document.write("Active Items: <br>");
-            document.write("_______________________________________________<br>");
+            document.getElementById("pCombatOutput").a.value +=("_______________________________________________<br>");
+            document.getElementById("pCombatOutput").a.value +=("Active Items: <br>");
+            document.getElementById("pCombatOutput").a.value +=("_______________________________________________<br>");
             for (count2 = 0; count2 < currentPlayer.playerActiveItems.length; count2++){
-                document.write((count2+1) + ") " + currentPlayer.playerActiveItems[count2].name  + "<br>");
+                document.getElementById("pCombatOutput").a.value +=((count2+1) + ") " + currentPlayer.playerActiveItems[count2].name  + '\n');
             }
-            document.write("_______________________________________________<br>");
-            document.write("Weapons: <br>");
-            document.write("_______________________________________________<br>");
+            document.getElementById("pCombatOutput").a.value +=("_______________________________________________<br>");
+            document.getElementById("pCombatOutput").a.value +=("Weapons: <br>");
+            document.getElementById("pCombatOutput").a.value +=("_______________________________________________<br>");
             for (count2 = 0; count2 < currentPlayer.playerWeapons.length; count2++){
-                document.write((count2+1) + ") " + currentPlayer.playerWeapons[count2].name  + "<br>");
+                document.getElementById("pCombatOutput").a.value +=((count2+1) + ") " + currentPlayer.playerWeapons[count2].name  + '\n');
             }
-            document.write("_______________________________________________<br>");
-            document.write("Weapon Name: " + currentPlayer.playerWeaponName + "<br>");
-            document.write("Weapon Modifier: " + currentPlayer.playerWeaponModifier + "<br>");
-            document.write("Weapon AP Cost: " + currentPlayer.playerWeaponAP + "<br>");
-            document.write("Weapon Damage: " + currentPlayer.playerWeaponDMG + "<br>");
-            document.write("Weapon Damage Type: " + currentPlayer.playerWeaponDMGType + "<br>");
-            document.write("Weapon Refresh: " + currentPlayer.playerWeaponRefresh + "<br>");
-            document.write("Combat Modifier: " + currentPlayer.playerCombatModifier + "<br>");
-            document.write("Physical Defense Modifier: " + currentPlayer.playerPhysicalDefenseModifier + "<br>");
-            document.write("Energy Defense Modifier: " + currentPlayer.playerEnergyDefenseModifier + "<br><br>");
+            document.getElementById("pCombatOutput").a.value +=("_______________________________________________<br>");
+            document.getElementById("pCombatOutput").a.value +=("Weapon Name: " + currentPlayer.playerWeaponName + '\n');
+            document.getElementById("pCombatOutput").a.value +=("Weapon Modifier: " + currentPlayer.playerWeaponModifier + '\n');
+            document.getElementById("pCombatOutput").a.value +=("Weapon AP Cost: " + currentPlayer.playerWeaponAP + '\n');
+            document.getElementById("pCombatOutput").a.value +=("Weapon Damage: " + currentPlayer.playerWeaponDMG + '\n');
+            document.getElementById("pCombatOutput").a.value +=("Weapon Damage Type: " + currentPlayer.playerWeaponDMGType + '\n');
+            document.getElementById("pCombatOutput").a.value +=("Weapon Refresh: " + currentPlayer.playerWeaponRefresh + '\n');
+            document.getElementById("pCombatOutput").a.value +=("Combat Modifier: " + currentPlayer.playerCombatModifier + '\n');
+            document.getElementById("pCombatOutput").a.value +=("Physical Defense Modifier: " + currentPlayer.playerPhysicalDefenseModifier + '\n');
+            document.getElementById("pCombatOutput").a.value +=("Energy Defense Modifier: " + currentPlayer.playerEnergyDefenseModifier + "<br><br>");
             return;
         }
         else {
-            //document.write("No players found!");
+            //document.getElementById("pCombatOutput").a.value +=("No players found!");
         }
     }
     for (count = 0; count < hostiles.length; count++){
         if (name === hostiles[count].hostileName){
             currentHostile = hostiles[count];
-            document.write("Player Name: " + currentHostile.hostileName + "<br>");
-            document.write("AP Max: " + currentHostile.hostileAPMax + "<br>");
-            document.write("AP Current: " + currentHostile.hostileAPCurrent + "<br>");
-            document.write("HP Max: " + currentHostile.hostileHPMax + "<br>");
-            document.write("HP Current: " + currentHostile.hostileHPCurrent + "<br>");
-            document.write("Refresh: " + currentHostile.hostileRefresh + "<br>");
-            document.write("AP Cost: " + currentHostile.hostileWeaponAP + "<br>");
-            document.write("Damage: " + currentHostile.hostileWeaponDMG + "<br>");
-            document.write("Damage Type: " + currentHostile.hostileWeaponDMGType + "<br>");
-            document.write("Agility: " + currentHostile.hostileAgility + "<br>");
-            document.write("Endurance: " + currentHostile.hostileEndurance + "<br>");
-            document.write("Expertise: " + currentHostile.hostileExpertise + "<br>");
-            document.write("Combat Modifier: " + currentHostile.hostileCombatModifier + "<br>");
-            document.write("Physical Defense Modifier: " + currentHostile.hostilePhysicalDefenseModifier + "<br>");
-            document.write("Energy Defense Modifier: " + currentHostile.hostileEnergyDefenseModifier + "<br><br>");
+            document.getElementById("pCombatOutput").a.value +=("Player Name: " + currentHostile.hostileName + '\n');
+            document.getElementById("pCombatOutput").a.value +=("AP Max: " + currentHostile.hostileAPMax + '\n');
+            document.getElementById("pCombatOutput").a.value +=("AP Current: " + currentHostile.hostileAPCurrent + '\n');
+            document.getElementById("pCombatOutput").a.value +=("HP Max: " + currentHostile.hostileHPMax + '\n');
+            document.getElementById("pCombatOutput").a.value +=("HP Current: " + currentHostile.hostileHPCurrent + '\n');
+            document.getElementById("pCombatOutput").a.value +=("Refresh: " + currentHostile.hostileRefresh + '\n');
+            document.getElementById("pCombatOutput").a.value +=("AP Cost: " + currentHostile.hostileWeaponAP + '\n');
+            document.getElementById("pCombatOutput").a.value +=("Damage: " + currentHostile.hostileWeaponDMG + '\n');
+            document.getElementById("pCombatOutput").a.value +=("Damage Type: " + currentHostile.hostileWeaponDMGType + '\n');
+            document.getElementById("pCombatOutput").a.value +=("Agility: " + currentHostile.hostileAgility + '\n');
+            document.getElementById("pCombatOutput").a.value +=("Endurance: " + currentHostile.hostileEndurance + '\n');
+            document.getElementById("pCombatOutput").a.value +=("Expertise: " + currentHostile.hostileExpertise + '\n');
+            document.getElementById("pCombatOutput").a.value +=("Combat Modifier: " + currentHostile.hostileCombatModifier + '\n');
+            document.getElementById("pCombatOutput").a.value +=("Physical Defense Modifier: " + currentHostile.hostilePhysicalDefenseModifier + '\n');
+            document.getElementById("pCombatOutput").a.value +=("Energy Defense Modifier: " + currentHostile.hostileEnergyDefenseModifier + "<br><br>");
             return;
         }
         else {
-            //document.write("No hostiles found!");
+            //document.getElementById("pCombatOutput").a.value +=("No hostiles found!");
         }
     }
     return;
@@ -836,7 +879,7 @@ OLD VERSION ABOVE */
 /* 12-sided Die */
 var dieRoll = function () {
     var roll = Math.round(Math.random() * 12) % 12 + 1;
-    //document.write("Roll: " + roll + "<br>");
+    //document.getElementById("pCombatOutput").a.value +=("Roll: " + roll + '\n');
     return roll;
 };
 
@@ -848,19 +891,21 @@ var toHit = function (attacker, defender){
     var result = 0;
     var curDie;
     if (attacker.type === "player"){
-        //document.write("player Expertise: " + attacker.playerExpertise + "<br>");
-        //document.write("player weapon mod: " + attacker.playerWeaponModifier + "<br>");
+        //document.getElementById("pCombatOutput").a.value +=("player Expertise: " + attacker.playerExpertise + '\n');
+        //document.getElementById("pCombatOutput").a.value +=("player weapon mod: " + attacker.playerWeaponModifier + '\n');
+        document.getElementById("pCombatOutput").a.value += (attacker.playerName + "'s Combat Mod: " + attacker.playerCombatModifier + '\n');
+        document.getElementById("pCombatOutput").a.value += (attacker.playerName + "'s Expertise: " + attacker.playerExpertise + '\n');
         offense = attacker.playerExpertise + attacker.playerCombatModifier;
         defense = defender.hostileAgility;
         curDie = dieRoll();
         result = offense + curDie - defense;
-        //document.write("Dieroll: " + curDie + "<br>");
-        //document.write("Offense: " + offense + "<br>");
-        //document.write("Defense: " + defense + "<br>");
-        //document.write("Result: " + result + "<br>");
+        document.getElementById("pCombatOutput").a.value += "Dieroll: " + curDie + '\n';
+        document.getElementById("pCombatOutput").a.value += "Offense: " + offense + '\n';
+        document.getElementById("pCombatOutput").a.value += "Defense: " + defense + '\n';
+        document.getElementById("pCombatOutput").a.value += "Result: " + result + '\n';
         if (result >= 10){
             document.getElementById("pCombatOutput").a.value += (attacker.playerName + " hit " + defender.hostileName + "!" + '\n');
-            //document.write("Player successfully hit hostile!<br>");
+            //document.getElementById("pCombatOutput").a.value +=("Player successfully hit hostile!<br>");
             return true;
         }
         else {
@@ -868,19 +913,19 @@ var toHit = function (attacker, defender){
         }
     }
     else {
-        //document.write("hostile Expertise: " + attacker.hostileExpertise + "<br>");
-        //document.write("hostile weapon mod: " + attacker.hostileWeaponModifier + "<br>");
+        //document.getElementById("pCombatOutput").a.value +=("hostile Expertise: " + attacker.hostileExpertise + '\n');
+        //document.getElementById("pCombatOutput").a.value +=("hostile weapon mod: " + attacker.hostileWeaponModifier + '\n');
         offense = attacker.hostileExpertise + attacker.hostileCombatModifier;
         defense = defender.playerAgility;
         curDie = dieRoll();
         result = offense + curDie - defense;
-        //document.write("Dieroll: " + curDie + "<br>");
-        //document.write("Offense: " + offense + "<br>");
-        //document.write("Defense: " + defense + "<br>");
-        //document.write("Result: " + result + "<br>");
+        //document.getElementById("pCombatOutput").a.value +=("Dieroll: " + curDie + '\n');
+        //document.getElementById("pCombatOutput").a.value +=("Offense: " + offense + '\n');
+        //document.getElementById("pCombatOutput").a.value +=("Defense: " + defense + '\n');
+        //document.getElementById("pCombatOutput").a.value +=("Result: " + result + '\n');
         if (result >= 10){
             document.getElementById("pCombatOutput").a.value += (attacker.hostileName + " hit " + defender.playerName + "!" + '\n');
-            //document.write("Hostile successfully hit player!<br>");
+            //document.getElementById("pCombatOutput").a.value +=("Hostile successfully hit player!<br>");
             return true;
         }
         else {
@@ -891,12 +936,11 @@ var toHit = function (attacker, defender){
 
 /* Planetary Combat Function */
 var planetaryCombat = function (attacker, defender){
+    // Need to add SELECT WEAPON!
     var damageDealt = 0;
     var damageReduction = 0;
     if (APCheck(attacker)){
-        var toHitSuccess = toHit(attacker, defender);
-        if (toHitSuccess){
-            hitCount++;
+        if (toHit(attacker, defender) === true){
             if (attacker.type === "player"){
                 if (attacker.playerWeaponDMGType === "physical" && defender.hostilePhysialDefenseModifier !== 0 ){
                     damageReduction = defender.hostilePhysicalDefenseModifier;
@@ -909,27 +953,31 @@ var planetaryCombat = function (attacker, defender){
                     if (damageDealt < 0) {
                         damageDealt = 0;
                     }
+                    document.getElementById("pCombatOutput").a.value += "Damage Dealt: " + damageDealt + '\n';
+                    document.getElementById("pCombatOutput").a.value += "player weapon dmg: " + attacker.playerWeaponDMG + '\n';
+                    document.getElementById("pCombatOutput").a.value += "hostile endurance: " + defender.hostileEndurance + '\n';
                     defender.hostileHPCurrent = defender.hostileHPCurrent - damageDealt;
                     if (deathCheck(defender)){
                         return false;
                     }
                     else {
                         document.getElementById("pCombatOutput").a.value += (defender.hostileName + " current HP: " + defender.hostileHPCurrent + '\n');
-                        //document.write("Hostile Current HP: " + defender.hostileHPCurrent + "<br>");
+                        //document.getElementById("pCombatOutput").a.value +=("Hostile Current HP: " + defender.hostileHPCurrent + '\n');
                         return true;
                     }
                 }
                 else {
                     damageDealt = attacker.playerWeaponDMG - defender.hostileEndurance + damageReduction;
-                    //document.write("player weapon dmg: " + attacker.playerWeaponDMG + "<br>");
-                    //document.write("hostile endurance: " + defender.hostileEndurance + "<br>");
+                    document.getElementById("pCombatOutput").a.value += "Damage Dealt: " + damageDealt + '\n';
+                    document.getElementById("pCombatOutput").a.value += "player weapon dmg: " + attacker.playerWeaponDMG + '\n';
+                    document.getElementById("pCombatOutput").a.value += "hostile endurance: " + defender.hostileEndurance + '\n';
                     defender.hostileHPCurrent = defender.hostileHPCurrent - damageDealt;
                     if (deathCheck(defender)){
                         return false;
                     }
                     else{
                         document.getElementById("pCombatOutput").a.value += (defender.hostileName + " current HP: " + defender.hostileHPCurrent + '\n');
-                        //document.write("Hostile Current HP: " + defender.hostileHPCurrent + "<br>");
+                        //document.getElementById("pCombatOutput").a.value +=("Hostile Current HP: " + defender.hostileHPCurrent + '\n');
                         return true;
                     }
                 }
@@ -946,25 +994,31 @@ var planetaryCombat = function (attacker, defender){
                     if (damageDealt < 0) {
                         damageDealt = 0;
                     }
+                    document.getElementById("pCombatOutput").a.value += "Damage Dealt: " + damageDealt + '\n';
+                    document.getElementById("pCombatOutput").a.value += "hostile weapon dmg: " + attacker.hostileWeaponDMG + '\n';
+                    document.getElementById("pCombatOutput").a.value += "player endurance: " + defender.playerEndurance + '\n';
                     defender.playerHPCurrent = defender.playerHPCurrent - damageDealt;
                     if (deathCheck(defender)){
                         return false;
                     }
                     else {
                         document.getElementById("pCombatOutput").a.value += (defender.playerName + " current HP: " + defender.playerHPCurrent + '\n');
-                        //document.write("Player Current HP: " + defender.playerHPCurrent + "<br>");
+                        //document.getElementById("pCombatOutput").a.value +=("Player Current HP: " + defender.playerHPCurrent + '\n');
                         return true;
                     }
                 }
                 else {
                     damageDealt = attacker.hostileWeaponDMG - defender.playerEndurance + damageReduction;
+                    document.getElementById("pCombatOutput").a.value += "Damage Dealt: " + damageDealt + '\n';
+                    document.getElementById("pCombatOutput").a.value += "hostile weapon dmg: " + attacker.hostileWeaponDMG + '\n';
+                    document.getElementById("pCombatOutput").a.value += "player endurance: " + defender.playerEndurance + '\n';
                     defender.playerHPCurrent = defender.playerHPCurrent - damageDealt;
                     if (deathCheck(defender)){
                         return false;
                     }
                     else{
                         document.getElementById("pCombatOutput").a.value += (defender.playerName + " current HP: " + defender.playerHPCurrent + '\n');
-                        //document.write("Player Current HP: " + defender.playerHPCurrent + "<br>");
+                        //document.getElementById("pCombatOutput").a.value +=("Player Current HP: " + defender.playerHPCurrent + '\n');
                         return true;
                     }
                 }
@@ -978,7 +1032,7 @@ var planetaryCombat = function (attacker, defender){
                 document.getElementById("pCombatOutput").a.value += (attacker.hostileName + " missed " + defender.playerName + "!" + '\n');
             }
             //document.getElementById("pCombatOutput").a.value += ("Missed!" + '\n');
-            //document.write("Missed!<br>");
+            //document.getElementById("pCombatOutput").a.value +=("Missed!<br>");
             return true;
         }
     }
@@ -993,12 +1047,12 @@ var APCheck = function (attacker) {
         if (attacker.playerAPCurrent >= attacker.playerWeaponAP){
             attacker.playerAPCurrent = attacker.playerAPCurrent - attacker.playerWeaponAP;
             document.getElementById("pCombatOutput").a.value += (attacker.playerName + " current AP after attack: " + attacker.playerAPCurrent + '\n');
-            //document.write("Player's Current AP after attack: " + attacker.playerAPCurrent + "<br>");
+            //document.getElementById("pCombatOutput").a.value +=("Player's Current AP after attack: " + attacker.playerAPCurrent + '\n');
             return true;
         }
         else {
             document.getElementById("pCombatOutput").a.value += (attacker.playerName + " does not have enough AP!" + '\n');
-            //document.write("Player does not have enough AP!<br>");
+            //document.getElementById("pCombatOutput").a.value +=("Player does not have enough AP!<br>");
             return false;
         }
     }
@@ -1006,12 +1060,12 @@ var APCheck = function (attacker) {
         if (attacker.hostileAPCurrent >= attacker.hostileWeaponAP){
             attacker.hostileAPCurrent = attacker.hostileAPCurrent - attacker.hostileWeaponAP;
             document.getElementById("pCombatOutput").a.value += (attacker.hostileName + " current AP after attack: " + attacker.hostileAPCurrent + '\n');
-            //document.write("Hostile's Current AP after attack: " + attacker.hostileAPCurrent + "<br>");
+            //document.getElementById("pCombatOutput").a.value +=("Hostile's Current AP after attack: " + attacker.hostileAPCurrent + '\n');
             return true;
         }
         else {
             document.getElementById("pCombatOutput").a.value += (attacker.hostileName + " does not have enough AP!" + '\n');
-            //document.write("Hostile does not have enough AP!<br>");
+            //document.getElementById("pCombatOutput").a.value +=("Hostile does not have enough AP!<br>");
             return false;
         }
     }
@@ -1025,7 +1079,7 @@ var APRefresh = function (user) {
             user.playerAPCurrent = user.playerAPMax;
         }
         document.getElementById("pCombatOutput").a.value += (user.playerName + " is Refreshed! Current AP is: " + user.playerAPCurrent + '\n');
-        //document.write("Player is Refreshed! Current AP is: " + user.playerAPCurrent + "<br>");
+        //document.getElementById("pCombatOutput").a.value +=("Player is Refreshed! Current AP is: " + user.playerAPCurrent + '\n');
     }
     else{
         user.hostileAPCurrent = user.hostileAPCurrent + user.hostileRefresh;
@@ -1033,7 +1087,7 @@ var APRefresh = function (user) {
             user.hostileAPCurrent = user.hostileAPMax;
         }
         document.getElementById("pCombatOutput").a.value += (user.hostileName + " is Refreshed! Current AP is: " + user.hostileAPCurrent + '\n');
-        //document.write("Hostile is Refreshed! Current AP is: " + user.hostileAPCurrent + "<br>");
+        //document.getElementById("pCombatOutput").a.value +=("Hostile is Refreshed! Current AP is: " + user.hostileAPCurrent + '\n');
     }
 };
 
@@ -1042,7 +1096,7 @@ var deathCheck = function (user) {
     if (user.type === "player"){
         if (user.playerHPCurrent <= 0){
             document.getElementById("pCombatOutput").a.value += (user.playerName + " has died!" + '\n');
-            //document.write("Player has died!");
+            //document.getElementById("pCombatOutput").a.value +=("Player has died!");
             return true;
         }
         else {
@@ -1052,7 +1106,7 @@ var deathCheck = function (user) {
     else {
         if (user.hostileHPCurrent <= 0){
             document.getElementById("pCombatOutput").a.value += (user.hostileName + " has died!" + '\n');
-            //document.write("Hostile has died!<br>");
+            //document.getElementById("pCombatOutput").a.value +=("Hostile has died!<br>");
             return true;
         }
         else {
@@ -1065,7 +1119,7 @@ var deathCheck = function (user) {
 var planetaryCombatArena = function (ps2, hs2) {
     var tempPlayers = ps2.split(", ");
     var tempHostiles = hs2.split(", ");
-    document.getElementById("pCombatOutput").a.value += "Hello1" + '\n';
+    //document.getElementById("pCombatOutput").a.value += "Hello1" + '\n';
     var tpCount = 0;
     var pCount = 0;
     var hCount = 0;
@@ -1115,7 +1169,9 @@ var planetaryCombatArena = function (ps2, hs2) {
             }
         }
     }
-    document.getElementById("pCombatOutput").a.value += "Hello2" + '\n';
+    //document.getElementById("pCombatOutput").a.value += "Hello2" + '\n';
+    document.getElementById("pCombatOutput").a.value += '\n' + "ROUND " + turnCount + '\n' + '\n';
+    turnCount++;
     document.getElementById("pCombatOutput").a.value += "Current Player: " + currentPlayers[0].playerName + '\n';
     // Combat Arena
     numPlayers = currentPlayers.length;
@@ -1180,8 +1236,6 @@ var planetaryCombatArena = function (ps2, hs2) {
         }
     }, 100);
     */
-    //rewrites output to indicate while loop has ended
-    //document.getElementById("pCombatOutput").a.value = "Hello11" + '\n';
     return;
 };
 
@@ -1201,38 +1255,60 @@ var playerTurn = function(player, callGL) {
     });
 };
 */
-var showListOfHostiles = function(callback){
-    var currentPlayerTargetName;
+var showListOfHostiles = function(){
     var currentPlayerTarget;
     // Generate Hostiles List and makes it visible
     initHostilesSelectListOption("pCombatPlayerTargetSelectOptionsList", 0, numHostiles, currentHostiles);
     toggle_visibility("pCombatPlayerTargetSelectDiv");
+    document.getElementById("pCombatPlayerTargetSelectButton").addEventListener('click', function(event) {
+        //Reset Hostiles List and make it invisible
+        turnButtonClicks++;
+        currentPlayerTarget = playerHostileSelection();
+        toggle_visibility("pCombatPlayerTargetSelectDiv");
+        resetHostilesSelectListOption("pCombatPlayerTargetSelectOptionsList");
+        playerTurnFC(currentPlayerTarget);
+        pCombatPlayerTargetSelectCheck = true;
+    });
+    return true;
+};
+
+var playerHostileSelection = function () {
+    var currentPlayerTargetName;
+    var currentPlayerTarget;
     // Sets current Hostile to be the selection from list
     currentPlayerTargetName = document.getElementById("pCombatPlayerTargetSelectOptionsList").options[document.getElementById("pCombatPlayerTargetSelectOptionsList").selectedIndex].text;
-    for (hCount = 0; hCount < numHostiles; hCount++){
-        if (currentPlayerTargetName === currentHostiles[hCount].hostileName){
+    for (hCount = 0; hCount < hostiles.length; hCount++){
+        if (currentPlayerTargetName === hostiles[hCount].hostileName){
             currentPlayerTarget = hostiles[hCount];
-            hCount = numHostiles;
+            hCount = hostiles.length;
         }
     }
     document.getElementById("pCombatOutput").a.value += "Current Player's Target: " + currentPlayerTarget.hostileName + '\n';
-    document.getElementById("pCombatPlayerTargetSelectButton").addEventListener('click', function(event) {
-        //Reset Hostiles List and make it invisible
-        toggle_visibility("pCombatPlayerTargetSelectDiv");
-        resetHostilesSelectListOption("pCombatPlayerTargetSelectOptionsList");
-        callback(currentPlayerTarget);
-    });
+    return currentPlayerTarget;
 };
 
-var playerTurn = function(player, callGL) {
-    showListOfHostiles(playerTurnFC(a));
-    gameLoopFC();
+var waiter = function() {
+    var gLoopInterval = setInterval(function(){
+        if (pCombatPlayerTargetSelectCheck === true){
+            //document.getElementById("pCombatOutput").a.value += '\n' + "GAMELOOPFC CALL!" + '\n' + '\n';
+            gameLoopFC();
+            pCombatPlayerTargetSelectCheck = false;
+            clearInterval(gLoopInterval);
+        }
+    },1000);
+};
+
+var playerTurn = function() {
+    selectWeapon();
+    //showListOfHostiles();
+    waiter();
+    return;
 };
 
 var playerTurnFC = function(currentPlayerTarget) {
-    var currentPlayer = players[activePlayer];
+    var currentPlayer = currentPlayers[activePlayer];
     battleContinue = planetaryCombat(currentPlayer, currentPlayerTarget);
-    document.getElementById("pCombatOutput").a.value += "battleContinue: " + battleContinue + '\n';
+    //document.getElementById("pCombatOutput").a.value += "battleContinue: " + battleContinue + '\n';
     if (battleContinue === false){
         currentHostiles.remove(currentPlayerTarget);
         hostiles.remove(currentPlayerTarget);
@@ -1240,56 +1316,55 @@ var playerTurnFC = function(currentPlayerTarget) {
             battleContinue = true;
         }
     }
-};
-
-/*
-var gameLoop = function () {
-   playerTurn(players[activePlayer], function() {
-       activePlayer += 1;
-       if (activePlayer >= players.length) {
-           activePlayer = 0;
-           // Run Hostiles turn after all players have gone
-           pCombatHostilesTurn();
-           // Run Refresh at the end of the round
-           pCombatRefreshRound();
-       }
-       else {
-        gameLoop();
-       }
-   });
-};
-*/
-
-var gameLoop = function () {
-   playerTurn(players[activePlayer], gameLoopFC());
+    return;
 };
 
 var gameLoopFC = function () {
+    var player = currentPlayers[activePlayer];
+    // Must reset player's combat modifier or playerWeaponMod is added every turn.
+    player.playerCombatModifier = player.playerCombatModifier - player.playerWeaponModifier;
     activePlayer += 1;
-   if (activePlayer >= players.length) {
+    if (activePlayer >= currentPlayers.length) {
        activePlayer = 0;
        // Run Hostiles turn after all players have gone
        pCombatHostilesTurn();
        // Run Refresh at the end of the round
        pCombatRefreshRound();
-   }
-   /*else {
-    gameLoop();
-   }
-   */
+       if (battleContinue === true){
+            document.getElementById("pCombatOutput").a.value += "Current Player: " + currentPlayers[activePlayer].playerName + '\n';
+            //document.getElementById("pCombatOutput").a.value += "Turn Button Clicks 1: " + turnButtonClicks + '\n';
+            gameLoop();
+       }
+    }
+    else {
+        document.getElementById("pCombatOutput").a.value += "Current Player: " + currentPlayers[activePlayer].playerName + '\n';
+        //document.getElementById("pCombatOutput").a.value += "Turn Button Clicks 2: " + turnButtonClicks + '\n';
+        gameLoop();
+    }
+    return;
 };
+
+var gameLoop = function () {
+   playerTurn();
+   return;
+};
+
+var sleep = function (milliSeconds){
+    var startTime = new Date().getTime();
+    while (new Date().getTime() < startTime + milliSeconds);
+}
 
 var pCombatHostilesTurn = function () {
     // Hostile's turn
     //var currentHostiles = chs;
     //var currentPlayers = cps;
-    var battleContinue = true;
+    //var battleContinue = true;
     for (j=0;j<numHostiles;j++){
         currentHostile = currentHostiles[j];
         document.getElementById("pCombatOutput").a.value += "Current Hostile: " + currentHostile.hostileName + '\n';
         if (battleContinue === true){
             currentHostileTarget = hostileTargetSelect(currentPlayers);
-            document.getElementById("pCombatOutput").a.value += "Hello9" + '\n';
+            //document.getElementById("pCombatOutput").a.value += "Hello9" + '\n';
             battleContinue = planetaryCombat(currentHostile, currentHostileTarget);
             if (battleContinue === false){
                 document.getElementById("pCombatOutput").a.value += "Hello10" + '\n';
@@ -1312,6 +1387,9 @@ var pCombatRefreshRound = function () {
     for (i=0;i<numHostiles;i++){
         APRefresh(currentHostiles[i]);
     }
+    document.getElementById("pCombatOutput").a.value += '\n' + "ROUND " + turnCount + '\n' + '\n';
+    turnCount++;
+    return;
 };
 
 var pCombatPlayerTargetSelectCheckFC = function () {
@@ -1328,7 +1406,7 @@ var initHostilesSelectListOption = function(id, min, max, group) {
         option.text = option.value;
         select.appendChild(option);
     }
-    document.getElementById("pCombatOutput").a.value += "Init Hello!" + '\n';
+    //document.getElementById("pCombatOutput").a.value += "Init Hello!" + '\n';
     return;
 };
 
@@ -1340,7 +1418,7 @@ var resetHostilesSelectListOption = function(id) {
     {
         select.remove(i);
     }
-    document.getElementById("pCombatOutput").a.value += "Reset Hello!" + '\n';
+    //document.getElementById("pCombatOutput").a.value += "Reset Hello!" + '\n';
     return;
 };
 
@@ -1364,11 +1442,12 @@ function toggle_visibility(id) {
        var e = document.getElementById(id);
        if(e.style.display === "block"){
           e.style.display = "none";
+          //document.getElementById("pCombatOutput").a.value += "Toggle Visibility OFF Hello!" + '\n';
        }
        else {
           e.style.display = "block";
+          //document.getElementById("pCombatOutput").a.value += "Toggle Visibility ON Hello!" + '\n';
        }
-       document.getElementById("pCombatOutput").a.value += "Toggle Visibility Hello!" + '\n';
        return false;
 }
 /* ********************************************************************************************************** */
@@ -1379,8 +1458,8 @@ var run = function () {
     var player1 = player("Carl", 5, 10, 3, 3, 2, 2, 2, 1, 2);
     var player2 = player("Steve", 6, 8, 4, 1, 3, 5, 1, 2, 3);
     //var hostile = (name, apMax, hpMax, refresh, combatMod, physicalDefenseMod, energyDefenseMod, APcost, DMG, DMGType, agility, endurance, expertise)
-    var hostile1 = hostile("Hank", 4, 5, 2, 2, -1, 0, 2, 2, "energy", 3, 2, 2);
-    var hostile2 = hostile("Bob", 4, 5, 2, 2, -1, 0, 2, 2, "physical", 3, 2, 2);
+    var hostile1 = hostile("Hank", 4, 5, 2, 2, 0, 0, 2, 2, "energy", 3, 2, 2);
+    var hostile2 = hostile("Bob", 4, 5, 2, 2, 0, 0, 2, 2, "physical", 3, 2, 2);
     players[0] = player1;
     players[1] = player2;
     hostiles[0] = hostile1;
@@ -1432,4 +1511,4 @@ var run = function () {
     return false;
 };
 
-//document.write("hitCount: " + hitCount + "<br>");
+//document.getElementById("pCombatOutput").a.value +=("hitCount: " + hitCount + '\n');
